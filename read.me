@@ -1,0 +1,31 @@
+* Install Node https://nodejs.org/en
+* Acessa o projeto criado
+    - npm init
+
+* Install o gereciador de pacote yarn https://yarnpkg.com/
+    - npm install -g yarn
+
+* Instalar framework Express
+    - yarn add Express
+
+* Biblioteca para atualizar as informações sem parar o servidor, 
+atualiza o servidor automaticamente quando houver alteração: Nodemon
+   -  yarn global add nodemon
+    Depois de instalar criar um script em package.json
+    -     "start":"nodemon ./index.js",
+
+* Para iniciar o servidor
+yarn start
+
+* Depois Criar a pasta SRC, depois cria uma pasta DATA, depois cria um JSON com as chamadas
+
+
+* Portas do Heroku
+    const port = process.env.PORT || 3000
+process.env.POR essa variavel será uma variavel referente a porta de publicação, se não tiver porta, ele publica na 3000
+
+
+* Arquivo .gitignore precisa ser criado para ignorar a pastas do node_modules, ou seja não vamos permitir que essa pasta node_modules 
+vá para o Heroku
+
+*Criar arquivo Procfile "Arquivo utilizado pelo Heroku
