@@ -32,8 +32,27 @@ vá para o Heroku
 
 * Ver onde o projeto vai rodar, exemplo esta na AWS
 
+* INstala NODJS em UBUNTU
+    https://github.com/nodesource/distributions/tree/master
+
+    - curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&\
+    sudo apt-get install -y nodejs
 
 
+* Token para Git Clone do projeto 
+    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
+    git clone https://renan.belarmino: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@github.com/RenanBelarmino/kazza-api-scan.git
+
+
+
+* Para garanti que vamos ter isso funcionando para sempre, vamos usar uma biblioteca chamada pm2 -g
+    -   sudo npm install pm2 -g
+    -   pm2 -v
+    -   pm2 list
+    -   pm2 start index.js --name=api_teste
+
+* Para matar todos os processo em Node
+    - kill all node    
 
 
 
