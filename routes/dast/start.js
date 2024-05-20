@@ -8,8 +8,8 @@ const tool = "dast";
 const resultsPath = './src/data/';
 
 // Funções para interagir com Zaproxy
-const zapApiKey = process.env.DAST_API_TOKEN;
-const zapBaseUrl = process.env.DAST_URL;
+const zapApiKey = 'kzservices_';
+const zapBaseUrl = 'http://localhost:8080';
 
 async function removeScanAscan() {
     console.log("[Zaproxy] - Removendo Scan...");

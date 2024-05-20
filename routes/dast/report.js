@@ -9,8 +9,8 @@ const version = "v1";
 const tool = "dast";
 
 // Funções para interagir com Zaproxy
-const zapApiKey = process.env.DAST_API_TOKEN;
-const zapBaseUrl = process.env.DAST_URL;
+const zapApiKey = 'kzservices';
+const zapBaseUrl = 'http://localhost:8080';
 
 // Função para gerar o relatório
 async function getJsonReport() {
