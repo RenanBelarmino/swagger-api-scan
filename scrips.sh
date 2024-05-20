@@ -5,7 +5,8 @@ fnm use --install-if-missing 20
 sudo apt install
 npm init
 npm start init
-npm install swagger-jsdoc swagger-ui-express
+npm install swagger-jsdoc swagger-ui-express,
+npm sudo npm install express-basic-auth
 
 git clone https://renan.belarmino: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@github.com/RenanBelarmino/kazza-api-scan.git
 cd kazza-api-scan/

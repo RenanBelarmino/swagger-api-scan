@@ -72,7 +72,7 @@ async function getStatusSpider(scan_id) {
             const response = await axios.get(url, { headers: {}, data: {}, httpsAgent });
             status_scan = response.data.status;
             console.log("[Zaproxy] - SPIDER Scan Rodando", `${status_scan}%`);
-            await new Promise(resolve => setTimeout(resolve, 60000));
+            await new Promise(resolve => setTimeout(resolve, 5000));
         } catch (error) {
             console.error("[Zaproxy] - Erro ao obter status do Scan", error.message);
             return;
@@ -90,6 +90,7 @@ async function runAscan(url_scan_zap) {
         const response = await axios.get(url, { headers: {}, data: {}, httpsAgent: new (require('https')).Agent({ rejectUnauthorized: false }) });
         const scan_id = response.data.scan;
         console.log("[Zaproxy] - Scan Iniciado");
+        console.log(`ID ::: ${scan_id}`)
         return scan_id;
     } catch (error) {
         console.error("[Zaproxy] - Erro ao iniciar o Scan", error.message);
@@ -107,7 +108,7 @@ async function getStatusAscan(scan_id) {
             const response = await axios.get(url, { headers: {}, data: {}, httpsAgent });
             status_scan = response.data.status;
             console.log("[Zaproxy] - ASCAN Scan Rodando", `${status_scan}%`);
-            await new Promise(resolve => setTimeout(resolve, 30000));
+            await new Promise(resolve => setTimeout(resolve, 10000));
         } catch (error) {
             console.error("[Zaproxy] - Erro ao obter status do Scan", error.message);
             return;
@@ -125,26 +126,23 @@ async function getStatusAscan(scan_id) {
  *     description: Endpoint para iniciar um SCAN DAST.
  *     tags:
  *       - DAST
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               targetUrl:
- *                 type: string
- *                 description: URL alvo para o scan
+ *     parameters:
+ *       - in: query
+ *         name: targetUrl
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: URL alvo para o scan
  *     responses:
  *       200:
- *         description: Scan iniciado com sucesso
+ *         description: Scan Terminado
  *       400:
  *         description: Parâmetros inválidos
  *       500:
  *         description: Erro interno do servidor
  */
 router.post(`/${tool}/${version}`, async (req, res) => {
-    const { targetUrl } = req.body;
+    const { targetUrl } = req.query;
 
     if (!targetUrl) {
         return res.status(400).json({ error: 'Parâmetro targetUrl é obrigatório' });
@@ -162,8 +160,7 @@ router.post(`/${tool}/${version}`, async (req, res) => {
             const ascanId = await runAscan(targetUrl);
             if (ascanId) {
                 await getStatusAscan(ascanId);
-
-                    return res.status(200).json({ message: 'Scan iniciado com sucesso', output: stdout });
+                return res.status(200).json({ message: `Scan Terminado ID ::: ${ascanId}` });
             } else {
                 return res.status(500).json({ error: 'Erro ao iniciar o ASCAN' });
             }
