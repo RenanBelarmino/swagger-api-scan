@@ -7,7 +7,6 @@ sudo git clone https://renan.belarmino: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@
 cd kazza-api-scan/
 
 
-
 sudo apt install npm -y
 #sudo npm init -y
 #sudo npm start init -y
