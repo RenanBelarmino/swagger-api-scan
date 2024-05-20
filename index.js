@@ -14,12 +14,14 @@ server.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 const resultadosRouter = require('./routes/Resultados/resultado');
 const productsRouter = require('./routes/defectdojo/get_products');
 const dastRouter = require('./routes/dast/start');
+const dast_report_Router = require('./routes/dast/report');
 
 
 // Usar as rotas
 server.use(resultadosRouter);
 server.use(productsRouter);
 server.use(dastRouter);
+server.use(dast_report_Router);
 
 server.listen(port, () => {
     console.log('Servidor está funcionando...');
