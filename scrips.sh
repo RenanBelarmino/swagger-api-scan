@@ -1,20 +1,25 @@
 sudo apt-get update
-sudo apt-get upgrade
+sudo apt-get upgrade -y
 sudo curl -fsSL https://fnm.vercel.app/install | bash
-sudo fnm use --install-if-missing 20
+#sudo fnm use --install-if-missing 20
 sudo apt install
-sudo npm init
-sudo npm start init
-sudo npm install swagger-jsdoc swagger-ui-express,
-sudo npm sudo npm install express-basic-auth
-
 sudo git clone https://renan.belarmino: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@github.com/RenanBelarmino/kazza-api-scan.git
 cd kazza-api-scan/
-sudo npm install axios
-sudo npm install swagger-jsdoc swagger-ui-express
-sudo  npm install dotenv
-chmod -R 777 node_modules
+
+
+
+sudo apt install npm -y
+#sudo npm init -y
+#sudo npm start init -y
+sudo npm install swagger-jsdoc swagger-ui-express -y
+sudo npm install express-basic-auth -y
+
+sudo npm install axios -y
+sudo npm install swagger-jsdoc swagger-ui-express -y
+sudo npm install dotenv -y
 sudo chmod -R 777 node_modules
+
+sudo npm install -g pm2 -y
 
 sudo pm2 start index.js --name=kz_services
 sudo pm2 startup ubuntu
