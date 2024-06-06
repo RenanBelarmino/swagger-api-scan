@@ -79,3 +79,18 @@ Video NODE JS Api do Zero
 https://www.youtube.com/watch?v=WejbsEnvvRQ
 
 
+
+
+* Docker Build
+docker build -t kzservices_nodejs:dev-v0.1 .
+docker run --name kzservices_nodejs -p 3000:3000 -d kzservices_nodejs:dev-v0.1    #-d para rodar como deamon
+
+Para subir com o docker-compose-ymal "docker-compose up --build"
+para ver o log docker-compose logs app
+
+docker-compose down
+docker-compose up --build
+
+
+
+

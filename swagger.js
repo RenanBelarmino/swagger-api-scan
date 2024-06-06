@@ -5,7 +5,7 @@ const options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'KZ SCAN SERVICES',
+            title: 'SCAN SERVICES',
             version: '1.0.0',
             description: 'Documentação da API de Produtos',
         },
@@ -27,12 +27,19 @@ const options = {
                 description: 'APIs relacionadas ao SCA'
             },
             {
-                name: 'Resultados',
-                description: 'APIs relacionadas ao resultado'
+                name: 'MOBILE',
+                description: 'APIs relacionadas ao Mobile Scan'
+            },
+            {
+                name: 'Horusec',
+                description: 'APIs relacionadas ao Horusec' // Adicione a tag Horusec
             }
         ]
     },
-    apis: ['./routes/**/*.js'], // Ajuste o caminho conforme necessário
+    apis: [
+        './routes/**/*.js', // Rotas padrão
+        './routes/horusec/*.js' // Rotas do Horusec
+    ],
 };
 
 const specs = swaggerJsdoc(options);
