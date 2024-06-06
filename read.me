@@ -1,4 +1,4 @@
-SSH : ssh -i "kazza.pem" ubuntu@ec2-54-94-103-78.sa-east-1.compute.amazonaws.com
+SSH : ssh -i "nome.pem" ubuntu@ec2-54-94-103-78.sa-east-1.compute.amazonaws.com
 
 
 * Install Node https://nodejs.org/en
@@ -44,7 +44,7 @@ vá para o Heroku
 
 * Token para Git Clone do projeto 
     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
-    git clone https://renan.belarmino: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@github.com/RenanBelarmino/kazza-api-scan.git app
+    git clone https://renan.belarmino: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@github.com/RenanBelarmino/swagger-api-scan.git app
 
 
 
@@ -69,7 +69,7 @@ vá para o Heroku
 
 
 *Subir pm2
-    pm2 start index.js --name=kz_services
+    pm2 start index.js --name=services
 
 
 Video Maquina AWS:
@@ -82,8 +82,8 @@ https://www.youtube.com/watch?v=WejbsEnvvRQ
 
 
 * Docker Build
-docker build -t kzservices_nodejs:dev-v0.1 .
-docker run --name kzservices_nodejs -p 3000:3000 -d kzservices_nodejs:dev-v0.1    #-d para rodar como deamon
+docker build -t services_nodejs:dev-v0.1 .
+docker run --name services_nodejs -p 3000:3000 -d services_nodejs:dev-v0.1    #-d para rodar como deamon
 
 Para subir com o docker-compose-ymal "docker-compose up --build"
 para ver o log docker-compose logs app
