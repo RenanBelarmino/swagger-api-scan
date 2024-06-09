@@ -1,0 +1,19 @@
+name: Scan on Push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  scan:
+    name: Run SAST Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+      
+    - name: Run SAST Scan
+      run: |
+        curl -X POST "http://localhost:3000/SAST/scan-git?repoUrl=${{ github.repository }}" 
