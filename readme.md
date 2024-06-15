@@ -9,7 +9,7 @@ Este projeto fornece uma API para serviços de scan DAST (Dynamic Application Se
 - [Autenticação](#autenticação)
 - [Endpoints](#endpoints)
   - [Login](#login)
-  - [SAST] (#SAST)
+  - [SAST](#SAST)
     - [SAST Scan](#sast-scan)
     - [SAST GET](#sast-GET)
 - [Documentação Swagger](#documentação-swagger)
@@ -113,7 +113,7 @@ curl -X POST http://localhost:3000/api/sast/scan \
 }
 ```
 
-### SAST
+##### SAST
 Teste de Segurança Estática (SAST)
 O Teste de Segurança Estática (Static Application Security Testing - SAST) é uma técnica utilizada para identificar potenciais vulnerabilidades de segurança no código-fonte de uma aplicação sem a necessidade de executá-la. Essa abordagem permite detectar falhas de segurança em um estágio inicial do ciclo de desenvolvimento, ajudando a mitigar riscos antes que o software seja implantado em produção.
 
