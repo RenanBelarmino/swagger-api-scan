@@ -2,15 +2,54 @@ const express = require('express');
 const { exec } = require('child_process');
 const fs = require('fs');
 const axios = require('axios');
+const path = require('path');
+const readline = require('readline');
 const router = express.Router();
 const version = "v1";
 const tool = "dast";
-const resultsPath = './src/data/';
+const resultsPath = '/src/data/dast/results/'; // Caminho para salvar os resultados
 
 // Funções para interagir com Zaproxy
 const zapApiKey = process.env.ZAP_API_KEY;
 const zapBaseUrl = process.env.ZAPROXY_URL;
 
+// Certificar-se de que o diretório de resultados existe
+if (!fs.existsSync(resultsPath)) {
+    fs.mkdirSync(resultsPath, { recursive: true });
+}
+
+// Função para gerar um ID aleatório
+function generateRandomId() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+// Função para gerenciar arquivos na pasta de resultados
+const manageResultFiles = () => {
+    const files = fs.readdirSync(resultsPath).map(file => ({
+        name: file,
+        time: fs.statSync(path.join(resultsPath, file)).mtime.getTime()
+    })).sort((a, b) => b.time - a.time);
+
+    if (files.length > 10) {
+        const filesToDelete = files.slice(10);
+        filesToDelete.forEach(file => {
+            fs.rmSync(path.join(resultsPath, file.name), { recursive: true, force: true });
+        });
+    }
+};
+
+// Função para salvar o resultado do scan
+const saveScanResult = (scanId, resultData) => {
+    const outputFileName = `${scanId}.json`;
+    const outputPath = path.join(resultsPath, outputFileName);
+
+    fs.writeFileSync(outputPath, JSON.stringify(resultData, null, 2));
+    manageResultFiles();
+
+    return scanId; // Retorna apenas o ID do resultado
+};
+
+// Funções relacionadas ao ZAP
 async function removeScanAscan() {
     console.log("[CONSOLE] - Removendo Scan...");
     const url = `${zapBaseUrl}/JSON/ascan/action/removeAllScans/?apikey=${zapApiKey}`;
@@ -115,7 +154,30 @@ async function getStatusAscan(scan_id) {
             return;
         }
     }
-    console.log("[CONSOLE] - ASCAN Scan Terminado", `${status_scan}%`);
+    
+
+console.log("[CONSOLE] - ASCAN Scan Terminado", `${status_scan}%`);
+}
+
+// Função para obter o relatório JSON do ZAP
+async function getJsonReport() {
+    const urlZap = `${zapBaseUrl}/OTHER/core/other/jsonreport/?apikey=${zapApiKey}`;
+
+    try {
+        const response = await axios.get(urlZap, { httpsAgent: new (require('https')).Agent({ rejectUnauthorized: false }) });
+
+        if (response.status === 200) {
+            console.log("[CONSOLE] - GET Gerando Report do scan em formato JSON...");
+            return response.data;
+        } else {
+            console.log("[CONSOLE] - Erro ao Baixar Arquivo");
+            console.log(response.status);
+            throw new Error('Erro ao Baixar Arquivo');
+        }
+    } catch (error) {
+        console.error(error.message);
+        throw error;
+    }
 }
 
 // Rota para iniciar SCAN DAST
@@ -149,9 +211,9 @@ router.post(`/${tool}/${version}`, async (req, res) => {
         return res.status(400).json({ error: 'Parâmetro targetUrl é obrigatório' });
     }
 
+    const scanId = generateRandomId();
+
     try {
-        //await newSession();
-        //await removeScanSpider();
         await removeScanAscan();
 
         const spiderScanId = await runSpider(targetUrl);
@@ -160,8 +222,25 @@ router.post(`/${tool}/${version}`, async (req, res) => {
 
             const ascanId = await runAscan(targetUrl);
             if (ascanId) {
-                await getStatusAscan(ascanId);
-                return res.status(200).json({ message: `Scan Terminado ID ::: ${ascanId}` });
+                await getStatusAscan(spiderScanId);
+
+
+                // Obter o relatório JSON
+                const report = await getJsonReport();
+
+                // Salvar o resultado do scan
+                const resultData = {
+                    spiderScanId,
+                    ascanId,
+                    targetUrl,
+                    scanId,
+                    timestamp: new Date().toISOString(),
+                    report
+                };
+
+                const scanResultId = saveScanResult(scanId, resultData);
+
+                return res.status(200).json({ message: `Scan Terminado ID ::: ${scanResultId}` });
             } else {
                 return res.status(500).json({ error: 'Erro ao iniciar o ASCAN' });
             }
@@ -175,3 +254,4 @@ router.post(`/${tool}/${version}`, async (req, res) => {
 });
 
 module.exports = router;
+

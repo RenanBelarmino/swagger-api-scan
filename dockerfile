@@ -1,4 +1,4 @@
-FROM node
+FROM node:latest
 
 # # Instalar dependências necessárias para o Horusec CLI e para o make
 RUN apt-get update && apt-get install -y curl jq make
