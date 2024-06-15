@@ -50,6 +50,7 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
+
 // Definindo o caminho absoluto diretamente
 const OUTPUT_FOLDER = '/src/data/dast/results/';
 const MAX_DISPLAY_SIZE = 1 * 1024 * 1024; // Limite de 1 MB para exibir conteúdo diretamente

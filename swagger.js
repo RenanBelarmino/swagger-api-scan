@@ -18,14 +18,30 @@ const options = {
                 name: 'SAST',
                 description: 'APIs relacionadas ao SAST'
             },
-        ]
+            {
+                name: 'Authentication',
+                description: 'APIs de autenticação'
+            }
+        ],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                }
+            }
+        },
+        security: [{
+            bearerAuth: []
+        }],
     },
     apis: [
         './routes/sast/*.js', // Rotas do SAST
-        './routes/dast/*.js' // Rotas do DAST
+        //'./routes/dast/*.js', // Rotas do DAST
+        './routes/*.js'
     ],
 };
-
 
 const specs = swaggerJsdoc(options);
 

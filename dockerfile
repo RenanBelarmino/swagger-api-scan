@@ -1,6 +1,6 @@
 FROM node:latest
 
-# # Instalar dependências necessárias para o Horusec CLI e para o make
+# Instalar dependências necessárias para o Horusec CLI e para o make
 RUN apt-get update && apt-get install -y curl jq make
 
 # Definir diretório de trabalho
@@ -12,6 +12,7 @@ COPY src /app/src
 COPY package-lock.json /app/
 COPY package.json /app/
 COPY index.js /app/
+COPY auth.js /app/
 COPY swagger.js /app/
 COPY users.js /app/
 COPY .env /app/
@@ -19,10 +20,8 @@ COPY .env /app/
 # Copiar script de instalação do Horusec
 COPY scripts/install_horusec.sh /app/scripts/
 
-# # Instalar Horusec CLI
+# Instalar Horusec CLI
 RUN /bin/bash /app/scripts/install_horusec.sh
-
-#COPY . .
 
 # Expor porta da aplicação
 EXPOSE 3000
