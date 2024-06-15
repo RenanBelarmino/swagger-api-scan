@@ -4,11 +4,14 @@
  *   name: DAST
  *   description: APIs para acessar os resultados dos scans do DAST
  * 
- * /resultDAST/{id}:
+ * /api/resultDAST/{id}:
  *   get:
  *     summary: Obtém os resultados de um scan pelo ID
  *     description: Retorna os resultados de um scan do DAST com base no ID gerado.
  *     tags: [DAST]
+ *     security:
+ *       - bearerAuth: []
+ *       - basicAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -50,11 +53,12 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
+
 // Definindo o caminho absoluto diretamente
 const OUTPUT_FOLDER = '/src/data/dast/results/';
 const MAX_DISPLAY_SIZE = 1 * 1024 * 1024; // Limite de 1 MB para exibir conteúdo diretamente
 
-router.get('/resultDAST/:id', (req, res) => {
+router.get('/:id', (req, res) => {
     const id = req.params.id;
     const fileName = `${id}.json`;
     const filePath = path.join(OUTPUT_FOLDER, fileName);

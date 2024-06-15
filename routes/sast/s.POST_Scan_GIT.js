@@ -41,11 +41,14 @@ const manageUploadedFiles = () => {
  *   name: SAST
  *   description: APIs relacionadas ao SAST
  * 
- * /SAST/scan-git:
+ * /api/sast/scan-git:
  *   post:
  *     summary: Inicia um scan no SAST a partir de um repositório Git
  *     description: Inicia um scan no SAST fornecendo a URL de um repositório Git para análise.
  *     tags: [SAST]
+ *     security:
+ *       - bearerAuth: []
+ *       - basicAuth: []
  *     parameters:
  *       - in: query
  *         name: repoUrl
@@ -85,7 +88,7 @@ const manageUploadedFiles = () => {
  *           curl -X POST "http://localhost:3000/SAST/scan-git?repoUrl=https://github.com/user/repo{{#if branch}}&branch={{branch}}{{/if}}{{#if username}}&username={{username}}{{/if}}{{#if password}}&password={{password}}{{/if}}"
  */
 
-router.post('/sast/scan-git', async (req, res) => {
+router.post('/', async (req, res) => {
     const { repoUrl, branch, username, password } = req.query;
 
     if (!repoUrl) {

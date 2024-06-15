@@ -1,57 +1,54 @@
 const express = require('express');
 const server = express();
 const port = process.env.PORT || 3000;
-const { swaggerUi, specs } = require('./swagger'); // Importar a configuração do Swagger
-require('dotenv').config();
-const basicAuth = require('express-basic-auth');
-
-// Importar os usuários
-const users = require('./users');
-
-// Configuração básica de autenticação
-const auth = basicAuth({
-    users, // Usando os usuários importados
-    challenge: true, // Exibe a caixa de diálogo de autenticação quando o acesso não é autorizado
-});
+const { swaggerUi, specs } = require('./swagger');
+const { verifyToken } = require('./auth'); // Verifique se o caminho está correto
 
 // Middleware para processar JSON no corpo das requisições
 server.use(express.json());
 
-// Middleware de logging para capturar e registrar todas as requisições feitas à Swagger
-server.use('/api-docs', (req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+server.use((req, res, next) => {
+    console.log(`[INFO] - ${new Date().toLocaleString()}: ${req.method} ${req.url}`);
     next();
-}, auth, swaggerUi.serve, swaggerUi.setup(specs));
+});
 
-    
+// Middleware de logging para capturar e registrar erros
+server.use((err, req, res, next) => {
+    console.error(`[ERROR] - ${new Date().toLocaleString()}: ${err.stack}`);
+    res.status(500).send('Something broke!');
+});
 
-// Importar as rotas
-const resultadosRouter = require('./routes/Resultados/resultado');
-const productsRouter = require('./routes/defectdojo/get_products');
+// Middleware de logging para capturar e registrar todas as requisições feitas à Swagger
+server.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-const mobile_start_Router = require('./routes/mobile/m_start');
+// LOGIN
+const loginRouter = require('./routes/login');
 
+//SAST
+const sast_POST_ScanRouter = require('./routes/sast/s.POST_Scan');
+const sast_POST_GIT_ScanRouter = require('./routes/sast/s.POST_Scan_GIT');
+const resultSASTRouter = require('./routes/sast/s.GET_SCAN_ID');
+
+
+//DAST
 const dast_POST_ScanRouter = require('./routes/dast/d.POST_Scan');
 const dast_GET_ScanRouter = require('./routes/dast/d.GET_SCAN_ID');
 
-const sast_POST_ScanRouter = require('./routes/sast/s.POST_Scan'); 
-const sast_POST_GIT_ScanRouter = require('./routes/sast/s.POST_Scan_GIT.js');
-const sast_GET_ScanRouter = require('./routes/sast/s.GET_SCAN_ID');
+
+// LOGIN
+server.use('/api/login', loginRouter);
+
+//SAST
+server.use('/api/sast/scan', verifyToken, sast_POST_ScanRouter); 
+server.use('/api/sast/scan-git', verifyToken, sast_POST_GIT_ScanRouter);
+server.use('/api/resultSAST', verifyToken, resultSASTRouter);
 
 
-
-// Usar as rotas
-server.use(resultadosRouter);
-server.use(productsRouter);
-server.use(mobile_start_Router);
-server.use(dast_GET_ScanRouter);
-server.use(dast_POST_ScanRouter);
-
-server.use(sast_GET_ScanRouter); 
-server.use(sast_POST_ScanRouter); 
-server.use(sast_POST_GIT_ScanRouter); 
+//DAST
+server.use('/api/dast/scan', verifyToken, dast_POST_ScanRouter);
+server.use('/api/resultDAST', verifyToken, dast_GET_ScanRouter);
 
 
 server.listen(port, () => {
-    console.log('Servidor está funcionando...');
+    console.log(`[INFO] - ${new Date().toLocaleString()}: Servidor está funcionando na porta ${port}`);
 });
