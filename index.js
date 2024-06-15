@@ -30,9 +30,9 @@ const sast_POST_GIT_ScanRouter = require('./routes/sast/s.POST_Scan_GIT');
 const resultSASTRouter = require('./routes/sast/s.GET_SCAN_ID');
 
 
-// const dast_POST_ScanRouter = require('./routes/dast/d.POST_Scan');
-// const dast_GET_ScanRouter = require('./routes/dast/d.GET_SCAN_ID');
-// const sast_POST_ScanRouter = require('./routes/sast/s.POST_Scan');
+//DAST
+const dast_POST_ScanRouter = require('./routes/dast/d.POST_Scan');
+const dast_GET_ScanRouter = require('./routes/dast/d.GET_SCAN_ID');
 
 
 // LOGIN
@@ -40,13 +40,14 @@ server.use('/api/login', loginRouter);
 
 //SAST
 server.use('/api/sast/scan', verifyToken, sast_POST_ScanRouter); 
-server.use('/api/resultSAST', verifyToken, resultSASTRouter);
 server.use('/api/sast/scan-git', verifyToken, sast_POST_GIT_ScanRouter);
+server.use('/api/resultSAST', verifyToken, resultSASTRouter);
 
 
-// server.use('/api/dast/get_scan', verifyToken, dast_GET_ScanRouter);
-// server.use('/api/dast/post_scan', verifyToken, dast_POST_ScanRouter);
-// server.use('/api/sast/post_scan', verifyToken, sast_POST_ScanRouter);
+//DAST
+server.use('/api/dast/scan', verifyToken, dast_POST_ScanRouter);
+server.use('/api/resultDAST', verifyToken, dast_GET_ScanRouter);
+
 
 server.listen(port, () => {
     console.log(`[INFO] - ${new Date().toLocaleString()}: Servidor está funcionando na porta ${port}`);

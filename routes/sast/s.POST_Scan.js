@@ -102,6 +102,7 @@ const manageUploadedFiles = () => {
  *     tags: [SAST]
  *     security:
  *       - bearerAuth: []
+ *       - basicAuth: []
  *     requestBody:
  *       required: true
  *       content:

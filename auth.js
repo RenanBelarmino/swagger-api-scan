@@ -20,25 +20,41 @@ const authenticateUser = (username, password) => {
 };
 
 const verifyToken = (req, res, next) => {
-    console.log(`[CONSOLE] - Verificando token`);
+    console.log(`[CONSOLE] - Verificando token ou credenciais básicas`);
+
     const token = req.headers['authorization'];
-    if (!token) {
-        console.log(`[CONSOLE] - Nenhum token fornecido`);
-        return res.status(403).send('No token provided');
-    }
+    if (token && token.startsWith('Bearer ')) {
+        const tokenPart = token.split(' ')[1]; // Separa o prefixo 'Bearer' do token
 
-    const tokenPart = token.split(' ')[1]; // Separa o prefixo 'Bearer' do token
+        jwt.verify(tokenPart, secret, (err, decoded) => {
+            if (err) {
+                console.log(`[CONSOLE] - Falha ao autenticar o token`);
+                return res.status(500).send('Failed to authenticate token');
+            }
 
-    jwt.verify(tokenPart, secret, (err, decoded) => {
-        if (err) {
-            console.log(`[CONSOLE] - Falha ao autenticar o token`);
-            return res.status(500).send('Failed to authenticate token');
+            console.log(`[CONSOLE] - Token autenticado com sucesso para o usuário: ${decoded.username}`);
+            req.user = decoded.username;
+            next();
+        });
+    } else if (req.headers.authorization) {
+        const authHeader = req.headers.authorization.split(' ');
+        const basicAuth = Buffer.from(authHeader[1], 'base64').toString().split(':');
+        const username = basicAuth[0];
+        const password = basicAuth[1];
+
+        const user = authenticateUser(username, password);
+        if (user) {
+            console.log(`[CONSOLE] - Autenticação básica bem-sucedida para o usuário: ${username}`);
+            req.user = username;
+            next();
+        } else {
+            console.log(`[CONSOLE] - Autenticação básica falhou para o usuário: ${username}`);
+            return res.status(401).send('Failed to authenticate basic credentials');
         }
-
-        console.log(`[CONSOLE] - Token autenticado com sucesso para o usuário: ${decoded.username}`);
-        req.user = decoded.username;
-        next();
-    });
+    } else {
+        console.log(`[CONSOLE] - Nenhum token ou credenciais básicas fornecidos`);
+        return res.status(403).send('No token or basic credentials provided');
+    }
 };
 
 module.exports = { generateToken, authenticateUser, verifyToken };

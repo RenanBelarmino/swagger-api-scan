@@ -28,6 +28,16 @@ const { generateToken, authenticateUser } = require('../auth');
  *               password:
  *                 type: string
  *                 example: '******'  # Exemplo de senha para documentação
+ *         text/plain:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *                 description: Insira a senha como texto simples (os caracteres serão visíveis)
+ *                 example: '******'  # Exemplo de senha para documentação
  *     responses:
  *       200:
  *         description: Successful login

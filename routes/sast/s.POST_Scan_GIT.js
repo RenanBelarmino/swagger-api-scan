@@ -48,6 +48,7 @@ const manageUploadedFiles = () => {
  *     tags: [SAST]
  *     security:
  *       - bearerAuth: []
+ *       - basicAuth: []
  *     parameters:
  *       - in: query
  *         name: repoUrl

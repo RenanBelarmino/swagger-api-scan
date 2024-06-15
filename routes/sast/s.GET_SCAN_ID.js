@@ -22,6 +22,7 @@ const MAX_DISPLAY_SIZE = 1 * 1024 * 1024; // Limite de 1 MB para exibir conteúd
  *     tags: [SAST]
  *     security:
  *       - bearerAuth: []
+ *       - basicAuth: []
  *     parameters:
  *       - in: path
  *         name: id
