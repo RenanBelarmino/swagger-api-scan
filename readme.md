@@ -10,6 +10,7 @@ Este projeto fornece uma API para serviços de scan DAST (Dynamic Application Se
 - [Endpoints](#endpoints)
   - [Login](#login)
   - [SAST Scan](#sast-scan)
+  - [SAST GET](#sast-GET)
 - [Documentação Swagger](#documentação-swagger)
 - [Estrutura de Pastas](#estrutura-de-pastas)
 - [Logs](#logs)
@@ -74,7 +75,7 @@ curl -X POST http://localhost:3000/api/login \
 -d '{"username":"renan","password":"renan123"}'
 ```
 
-### SAST Scan
+### SAST Scan POST
 
 #### URL
 
@@ -108,6 +109,30 @@ curl -X POST http://localhost:3000/api/sast/scan \
   "scanId": "abcdef123456"
 }
 ```
+#### SAST GET
+
+
+Obtém os resultados de um scan pelo ID.
+
+- **Descrição**: Retorna os resultados de um scan do SAST com base no ID gerado.
+- **Parâmetros de URL**:
+  - `id` (string): ID único do scan gerado pelo SAST.
+- **Segurança**: Requer autenticação Bearer Token.
+- **Respostas**:
+  - **200 OK**:
+    - Resultados do scan obtidos com sucesso.
+    - Retorna um objeto `result` com os resultados do scan.
+  - **404 Not Found**:
+    - Scan não encontrado.
+    - Retorna uma mensagem de erro indicando que o resultado não foi encontrado.
+  - **500 Internal Server Error**:
+    - Erro ao obter os resultados do scan.
+    - Retorna uma mensagem de erro genérica em caso de falha ao acessar ou processar os resultados.
+- **Exemplo de Chamada**:
+  - Exemplo de chamada usando Curl:
+    ```bash
+    curl -X GET "http://localhost:3000/api/resultSAST/{id}"
+    ```
 
 #### estrutura-de-pastas
 

@@ -1,14 +1,27 @@
+const express = require('express');
+const router = express.Router();
+const fs = require('fs');
+const path = require('path');
+
+
+// Defina o caminho absoluto para os resultados do SAST
+const OUTPUT_FOLDER = '/src/data/sast/results/';
+const MAX_DISPLAY_SIZE = 1 * 1024 * 1024; // Limite de 1 MB para exibir conteúdo diretamente
+
+
 /**
  * @swagger
  * tags:
  *   name: SAST
  *   description: APIs para acessar os resultados dos scans do SAST
  * 
- * /resultSAST/{id}:
+ * /api/resultSAST/{id}:
  *   get:
  *     summary: Obtém os resultados de um scan pelo ID
  *     description: Retorna os resultados de um scan do SAST com base no ID gerado.
  *     tags: [SAST]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -51,19 +64,11 @@
  *       curlExample:
  *         summary: Exemplo de chamada usando Curl
  *         value: |
- *           curl -X GET "http://localhost:3000/resultSAST/{id}"
+ *           curl -X GET "http://localhost:3000/api/resultSAST/{id}"
  */
 
-const express = require('express');
-const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 
-// Definindo o caminho absoluto diretamente
-const OUTPUT_FOLDER = '/src/data/sast/results/';
-const MAX_DISPLAY_SIZE = 1 * 1024 * 1024; // Limite de 1 MB para exibir conteúdo diretamente
-
-router.get('/resultSAST/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
     const id = req.params.id;
     const fileName = `${id}.json`;
     const filePath = path.join(OUTPUT_FOLDER, fileName);
