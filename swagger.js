@@ -11,10 +11,6 @@ const options = {
         },
         tags: [
             {
-                name: 'DefectDojo',
-                description: 'APIs relacionadas ao DefectDojo'
-            },
-            {
                 name: 'DAST',
                 description: 'APIs relacionadas ao DAST'
             },
@@ -22,25 +18,14 @@ const options = {
                 name: 'SAST',
                 description: 'APIs relacionadas ao SAST'
             },
-            {
-                name: 'SCA',
-                description: 'APIs relacionadas ao SCA'
-            },
-            {
-                name: 'MOBILE',
-                description: 'APIs relacionadas ao Mobile Scan'
-            },
-            {
-                name: 'Horusec',
-                description: 'APIs relacionadas ao Horusec' // Adicione a tag Horusec
-            }
         ]
     },
     apis: [
-        './routes/**/*.js', // Rotas padrão
-        './routes/horusec/*.js' // Rotas do Horusec
+        './routes/sast/*.js', // Rotas do SAST
+        './routes/dast/*.js' // Rotas do DAST
     ],
 };
+
 
 const specs = swaggerJsdoc(options);
 
