@@ -72,7 +72,7 @@ Todas as requisições aos endpoints de scan devem incluir um token JWT no cabe�
 curl -X POST http://localhost:3000/api/login \
 -H "Content-Type: application/json" \
 -d '{"username":"renan","password":"renan123"}'
-
+```
 
 ### SAST Scan
 
@@ -107,11 +107,12 @@ curl -X POST http://localhost:3000/api/sast/scan \
   "message": "Scan Realizado com sucesso",
   "scanId": "abcdef123456"
 }
-
+```
 
 http://localhost:3000/api-docs
 
 
+#### estrutura-de-pastas
 .
 ├── src/
 │   ├── data/
@@ -134,7 +135,12 @@ http://localhost:3000/api-docs
 ├── package.json
 └── README.md                    # Documentação do projeto
 
-Logs
+### Logs
+```
+[CONSOLE] - Mensagem do log
+
 Para facilitar o debug e monitoramento, logs são gerados durante os processos de autenticação e execução de scans. Eles estão no formato:
 
+Certifique-se de substituir `<url-do-repositório>` pelo URL real do seu repositório e `<seu-token-aqui>` pelo token JWT gerado na etapa de login. Este `README.md` deve fornecer todas as informações necessárias para instalação, uso, autenticação, acesso aos endpoints, documentação do Swagger, estrutura de pastas e logs do seu projeto.
+```
 
