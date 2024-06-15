@@ -73,6 +73,45 @@ curl -X POST http://localhost:3000/api/login \
 -H "Content-Type: application/json" \
 -d '{"username":"renan","password":"renan123"}'
 
+
+### SAST Scan
+
+#### URL
+
+`POST /api/sast/scan`
+
+#### Descrição
+
+Este endpoint inicia um scan SAST fornecendo um arquivo ou pasta para análise. Suporta múltiplos formatos de arquivo, incluindo `.zip`, `.tar`, `.tar.gz`, `.tgz`, `.gz`, e `.bz2`.
+
+#### Parâmetros
+
+| Campo     | Tipo     | Descrição                           |
+|-----------|----------|-------------------------------------|
+| `project` | file     | Arquivo ou pasta a ser analisado    |
+
+#### Cabeçalho
+
+| Campo           | Tipo   | Descrição                       |
+|-----------------|--------|---------------------------------|
+| `Authorization` | string | Bearer token JWT obtido no login|
+
+#### Exemplo de Requisição
+
+```bash
+curl -X POST http://localhost:3000/api/sast/scan \
+-H "Authorization: Bearer <seu-token-aqui>" \
+-F "project=@/caminho/para/o/seu/arquivo.zip"
+
+{
+  "message": "Scan Realizado com sucesso",
+  "scanId": "abcdef123456"
+}
+
+
+http://localhost:3000/api-docs
+
+
 .
 ├── src/
 │   ├── data/
@@ -97,4 +136,5 @@ curl -X POST http://localhost:3000/api/login \
 
 Logs
 Para facilitar o debug e monitoramento, logs são gerados durante os processos de autenticação e execução de scans. Eles estão no formato:
+
 
