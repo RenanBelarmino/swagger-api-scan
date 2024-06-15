@@ -109,10 +109,8 @@ curl -X POST http://localhost:3000/api/sast/scan \
 }
 ```
 
-http://localhost:3000/api-docs
-
-
 #### estrutura-de-pastas
+
 .
 ├── src/
 │   ├── data/
@@ -134,6 +132,7 @@ http://localhost:3000/api-docs
 ├── users.js                     # Base de dados de usuários (temporária)
 ├── package.json
 └── README.md                    # Documentação do projeto
+
 
 ### Logs
 ```
