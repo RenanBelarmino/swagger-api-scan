@@ -18,6 +18,7 @@ sudo npm install swagger-jsdoc swagger-ui-express -y
 sudo npm install dotenv -y
 sudo chmod -R 777 node_modules
 sudo npm install dockerode
+sudo npm install jsonwebtoken bcryptjs express express-jwt
 
 
 sudo npm install -g pm2 -y
