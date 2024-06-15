@@ -183,12 +183,15 @@ async function getJsonReport() {
 // Rota para iniciar SCAN DAST
 /**
  * @swagger
- * /dast/v1/:
+ * /api/dast/scan:
  *   post:
  *     summary: Iniciar SCAN DAST
  *     description: Endpoint para iniciar um SCAN DAST.
  *     tags:
  *       - DAST
+ *     security:
+ *       - bearerAuth: []
+ *       - basicAuth: []
  *     parameters:
  *       - in: query
  *         name: targetUrl
@@ -204,7 +207,7 @@ async function getJsonReport() {
  *       500:
  *         description: Erro interno do servidor
  */
-router.post(`/${tool}/${version}`, async (req, res) => {
+router.post('/', async (req, res) => {
     const { targetUrl } = req.query;
 
     if (!targetUrl) {

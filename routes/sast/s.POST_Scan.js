@@ -60,7 +60,6 @@ const unrarFile = async (filePath, extractTo) => {
     throw new Error('Arquivos .rar não são suportados. Por favor, faça o upload de arquivos nos formatos suportados: .zip, .tar, .tar.gz, .tgz, .gz, .bz2.');
 };
 
-
 const unbzip2File = (filePath, extractTo) => {
     return decompress(filePath, extractTo, {
         plugins: [decompressBzip2()]
@@ -96,11 +95,14 @@ const manageUploadedFiles = () => {
  *   name: SAST
  *   description: APIs relacionadas ao SAST
  * 
- * /SAST/scan:
+ * /api/sast/scan:
  *   post:
  *     summary: Inicia um scan no SAST
  *     description: Inicia um scan no SAST fornecendo o arquivo ou pasta para análise.
  *     tags: [SAST]
+ *     security:
+ *       - bearerAuth: []
+ *       - basicAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -120,8 +122,7 @@ const manageUploadedFiles = () => {
  *       '500':
  *         description: Falha ao iniciar o scan
  */
-
-router.post('/sast/scan', upload.single('project'), async (req, res) => {
+router.post('/', upload.single('project'), async (req, res) => {
     const file = req.file;
 
     if (!file) {
@@ -189,7 +190,5 @@ router.post('/sast/scan', upload.single('project'), async (req, res) => {
         res.status(500).json({ error: 'Falha ao processar o arquivo do projeto' });
     }
 });
-
-
 
 module.exports = router;
