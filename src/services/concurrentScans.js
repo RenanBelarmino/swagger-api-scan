@@ -1,4 +1,4 @@
-const users = require('./users');
+const users = require('../config/users');
 
 const canStartConcurrentScan = (username) => {
     const user = users[username];
@@ -7,7 +7,6 @@ const canStartConcurrentScan = (username) => {
         return false;
     }
 
-    const userPermissions = user.permissions;
     const maxConcurrentScans = parseInt(user.CONCURRENT_SCANS);
     console.log(`[CONSOLE] - Usuário ${username} tem ${maxConcurrentScans} de Scan Concorrentes Configurado`);
 

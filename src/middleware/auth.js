@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const users = require('./users'); // Importe os usuários
+const users = require('../config/users'); // Importe os usuários
 
 const secret = process.env.JWT_SECRET || 'your_jwt_secret';
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { generateToken, authenticateUser } = require('../auth');
+const { generateToken, authenticateUser } = require('../src/middleware/auth');
 
 /**
  * @swagger

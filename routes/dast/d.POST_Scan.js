@@ -3,7 +3,7 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const router = express.Router();
-const {concludeDASTScan} = require('../../concurrentScans'); // Importe a função de conclusão do scan DAST
+const {concludeDASTScan} = require('../../src/services/concurrentScans'); // Importe a função de conclusão do scan DAST
 
 // Caminho absoluto dentro do container para o volume shared_volume/dast/results/
 const resultsPath = '/src/data/dast/results/';

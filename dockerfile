@@ -28,11 +28,11 @@ COPY routes /app/routes
 COPY src /app/src
 COPY package-lock.json /app/
 COPY package.json /app/
-COPY concurrentScans.js /app/
-COPY index.js /app/
-COPY auth.js /app/
-COPY swagger.js /app/
-COPY users.js /app/
+#COPY concurrentScans.js /app/
+#COPY index.js /app/
+#COPY auth.js /app/
+#COPY swagger.js /app/
+#COPY users.js /app/
 COPY .env /app/
 
 # Copiar script de instalação do Horusec
@@ -49,4 +49,4 @@ RUN mkdir -p /zap/wrk/results && chmod -R 777 /zap/wrk/results
 EXPOSE 3000
 
 # Comando padrão para iniciar a aplicação
-CMD ["npm", "start"]
+CMD ["node", "routes/index.js"]
