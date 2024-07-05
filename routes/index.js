@@ -1,17 +1,19 @@
 const express = require('express');
 const server = express();
 const port = process.env.PORT || 3000;
-const { swaggerUi, specs } = require('./swagger');
-const { verifyToken } = require('./auth'); // Verifique se o caminho está correto
-const { canStartConcurrentScan } = require('./concurrentScans'); // Importe a função de controle de scans concorrentes
+const { swaggerUi, specs } = require('../src/docs/swagger');
+const { verifyToken } = require('../src/middleware/auth'); // Verifique se o caminho está correto
+const { canStartConcurrentScan } = require('../src/services/concurrentScans'); // Importe a função de controle de scans concorrentes
+const { userPermissions } = require('../src/services/userPermissions'); // Importe a função de controle de scans concorrentes
 
-const loginRouter = require('./routes/login');
-const sast_POST_ScanRouter = require('./routes/sast/s.POST_Scan');
-const sast_POST_GIT_ScanRouter = require('./routes/sast/s.POST_Scan_GIT');
-const resultSASTRouter = require('./routes/sast/s.GET_SCAN_ID');
-const dast_POST_ScanRouter = require('./routes/dast/d.POST_Scan');
-const dast_GET_ScanRouter = require('./routes/dast/d.GET_SCAN_ID');
-const dast_GET_ListScans = require('./routes/dast/d.GET_LIST');
+
+const loginRouter = require('./login');
+const sast_POST_ScanRouter = require('./sast/s.POST_Scan');
+const sast_POST_GIT_ScanRouter = require('./sast/s.POST_Scan_GIT');
+const resultSASTRouter = require('./sast/s.GET_SCAN_ID');
+const dast_POST_ScanRouter = require('./dast/d.POST_Scan');
+const dast_GET_ScanRouter = require('./dast/d.GET_SCAN_ID');
+const dast_GET_ListScans = require('./dast/d.GET_LIST');
 
 // Middleware para processar JSON no corpo das requisições
 server.use(express.json());
