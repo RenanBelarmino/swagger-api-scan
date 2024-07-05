@@ -9,10 +9,11 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - shared_volume:/src/data/sast
+      - shared_volume:/zap/wrk
+      - /src/data/sast:/src/data/sast
       - /var/run/docker.sock:/var/run/docker.sock  # Permitir acesso ao Docker daemon
-      - shared_volume:/src/data/mobile
-      - shared_volume:/src/data/dast
+      - /src/data/mobile:/src/data/mobile
+      - /src/data/dast:/src/data/dast
     networks:
       - services_scan
     privileged: true
@@ -23,30 +24,30 @@ services:
     env_file:
       - .env  # Inclua o arquivo .env para que todas as variáveis de ambiente sejam carregadas
 
-  zaproxy:
-    image: zaproxy/zap-stable
-    container_name: dast_scan
-    command: zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config api.key=${ZAP_API_KEY}
-    ports:
-      - "8080:8080"
-    user: zap
-    environment:
-      - ZAP_API_KEY=${ZAP_API_KEY}
-    volumes:
-      - shared_volume:/zap/wrk
-      - shared_volume:/src/data/dast
-    networks:
-      - services_scan
+  # zaproxy:
+  #   image: zaproxy/zap-stable
+  #   container_name: dast_scan
+  #   command: zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config api.key=${ZAP_API_KEY}
+  #   ports:
+  #     - "8080:8080"
+  #   user: zap
+  #   environment:
+  #     - ZAP_API_KEY=${ZAP_API_KEY}
+  #   volumes:
+  #     - shared_volume:/zap/wrk
+  #     - shared_volume:/src/data/dast
+  #   networks:
+  #     - services_scan
 
-  mobsf:
-    image: opensecurity/mobile-security-framework-mobsf
-    container_name: mobile_scan
-    ports:
-      - "8081:8000"
-    volumes:
-      - shared_volume:/src/data/mobile
-    networks:
-      - services_scan
+  # mobsf:
+  #   image: opensecurity/mobile-security-framework-mobsf
+  #   container_name: mobile_scan
+  #   ports:
+  #     - "8081:8000"
+  #   volumes:
+  #     - shared_volume:/src/data/mobile
+  #   networks:
+  #     - services_scan
 
 volumes:
   shared_volume:

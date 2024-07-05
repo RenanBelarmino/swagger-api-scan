@@ -10,10 +10,14 @@ const generateToken = (username) => {
 
 const authenticateUser = (username, password) => {
     console.log(`[CONSOLE] - Autenticando usuário: ${username}`);
-    const userPassword = users[username];
-    if (userPassword && userPassword === password) {
+    const user = users[username];
+    if (user && user.password === password) {
         console.log(`[CONSOLE] - Autenticação bem-sucedida para o usuário: ${username}`);
-        return { username };
+        return {
+            username,
+            permissions: user.permissions,
+            CONCURRENT_SCANS: parseInt(user.CONCURRENT_SCANS)  // Retorna o limite de scans concorrentes como um número inteiro
+        };
     }
     console.log(`[CONSOLE] - Autenticação falhou para o usuário: ${username}`);
     return null;
@@ -33,7 +37,17 @@ const verifyToken = (req, res, next) => {
             }
 
             console.log(`[CONSOLE] - Token autenticado com sucesso para o usuário: ${decoded.username}`);
-            req.user = decoded.username;
+            const user = users[decoded.username];
+            if (!user) {
+                console.log(`[CONSOLE] - Usuário não encontrado: ${decoded.username}`);
+                return res.status(404).send('User not found');
+            }
+
+            req.user = {
+                username: decoded.username,
+                permissions: user.permissions,
+                CONCURRENT_SCANS: parseInt(user.CONCURRENT_SCANS)
+            };
             next();
         });
     } else if (req.headers.authorization) {
@@ -45,7 +59,7 @@ const verifyToken = (req, res, next) => {
         const user = authenticateUser(username, password);
         if (user) {
             console.log(`[CONSOLE] - Autenticação básica bem-sucedida para o usuário: ${username}`);
-            req.user = username;
+            req.user = user; // Define o usuário autenticado e suas permissões
             next();
         } else {
             console.log(`[CONSOLE] - Autenticação básica falhou para o usuário: ${username}`);

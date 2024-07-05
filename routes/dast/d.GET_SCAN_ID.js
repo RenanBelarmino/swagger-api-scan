@@ -1,3 +1,12 @@
+const express = require('express');
+const router = express.Router();
+const fs = require('fs');
+const path = require('path');
+
+// Definindo o caminho absoluto diretamente
+const OUTPUT_FOLDER = '/src/data/dast/results/';
+const MAX_DISPLAY_SIZE = 1 * 1024 * 1024; // Limite de 1 MB para exibir conteúdo diretamente
+
 /**
  * @swagger
  * tags:
@@ -19,11 +28,25 @@
  *         description: ID único do scan gerado pelo DAST
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: reportType
+ *         required: true
+ *         description: Tipo do relatório (html, md, xml, json)
+ *         schema:
+ *           type: string
+ *           enum: [html, md, xml, json]
  *     responses:
  *       '200':
  *         description: Resultados do scan obtidos com sucesso
  *         content:
  *           application/json:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *           text/html:
+ *             schema:
+ *               type: string
+ *           application/octet-stream:
  *             schema:
  *               type: string
  *               format: binary
@@ -47,20 +70,16 @@
  *                   type: string
  */
 
-
-const express = require('express');
-const router = express.Router();
-const fs = require('fs');
-const path = require('path');
-
-
-// Definindo o caminho absoluto diretamente
-const OUTPUT_FOLDER = '/src/data/dast/results/';
-const MAX_DISPLAY_SIZE = 1 * 1024 * 1024; // Limite de 1 MB para exibir conteúdo diretamente
-
 router.get('/:id', (req, res) => {
     const id = req.params.id;
-    const fileName = `${id}.json`;
+    const { reportType } = req.query;
+    const validReportTypes = ['html', 'md', 'xml', 'json'];
+
+    if (!reportType || !validReportTypes.includes(reportType)) {
+        return res.status(400).json({ error: 'Tipo de relatório inválido. Tipos válidos são: html, md, xml, json.' });
+    }
+
+    const fileName = `${id}.${reportType}`;
     const filePath = path.join(OUTPUT_FOLDER, fileName);
     console.log(`[CONSOLE] - Tentando acessar o arquivo DAST em: ${filePath}`);
 
@@ -78,11 +97,26 @@ router.get('/:id', (req, res) => {
                 return res.status(500).json({ error: 'Erro ao obter estatísticas do arquivo' });
             }
 
-            if (stats.size > MAX_DISPLAY_SIZE) {
-                // Forçar o download se o arquivo for maior que o limite definido
+            if (stats.size > MAX_DISPLAY_SIZE || reportType !== 'json') {
+                // Forçar o download se o arquivo for maior que o limite definido ou se não for JSON
                 const readStream = fs.createReadStream(filePath);
                 res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
-                res.setHeader('Content-Type', 'application/json');
+                
+                switch (reportType) {
+                    case 'html':
+                        res.setHeader('Content-Type', 'text/html');
+                        break;
+                    case 'md':
+                        res.setHeader('Content-Type', 'text/markdown');
+                        break;
+                    case 'xml':
+                        res.setHeader('Content-Type', 'application/xml');
+                        break;
+                    case 'json':
+                        res.setHeader('Content-Type', 'application/json');
+                        break;
+                }
+
                 readStream.pipe(res);
             } else {
                 // Enviar o conteúdo do arquivo como resposta JSON
@@ -105,4 +139,3 @@ router.get('/:id', (req, res) => {
 });
 
 module.exports = router;
-

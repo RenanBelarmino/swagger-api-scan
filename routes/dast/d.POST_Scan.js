@@ -1,30 +1,26 @@
 const express = require('express');
 const { exec } = require('child_process');
 const fs = require('fs');
-const axios = require('axios');
 const path = require('path');
-const readline = require('readline');
 const router = express.Router();
-const version = "v1";
-const tool = "dast";
-const resultsPath = '/src/data/dast/results/'; // Caminho para salvar os resultados
+const {concludeDASTScan} = require('../../concurrentScans'); // Importe a função de conclusão do scan DAST
 
-// Funções para interagir com Zaproxy
-const zapApiKey = process.env.ZAP_API_KEY;
-const zapBaseUrl = process.env.ZAPROXY_URL;
+// Caminho absoluto dentro do container para o volume shared_volume/dast/results/
+const resultsPath = '/src/data/dast/results/';
 
-// Certificar-se de que o diretório de resultados existe
 if (!fs.existsSync(resultsPath)) {
     fs.mkdirSync(resultsPath, { recursive: true });
+    console.log(`[CONSOLE] - Diretório ${resultsPath} criado.`);
+} else {
+    console.log(`[CONSOLE] - Diretório ${resultsPath} já existe.`);
 }
 
-// Função para gerar um ID aleatório
 function generateRandomId() {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
-// Função para gerenciar arquivos na pasta de resultados
 const manageResultFiles = () => {
+    console.log("[CONSOLE] - Gerenciando arquivos de resultados...");
     const files = fs.readdirSync(resultsPath).map(file => ({
         name: file,
         time: fs.statSync(path.join(resultsPath, file)).mtime.getTime()
@@ -34,150 +30,56 @@ const manageResultFiles = () => {
         const filesToDelete = files.slice(10);
         filesToDelete.forEach(file => {
             fs.rmSync(path.join(resultsPath, file.name), { recursive: true, force: true });
+            console.log(`[CONSOLE] - Arquivo ${file.name} removido.`);
         });
+    } else {
+        console.log("[CONSOLE] - Nenhum arquivo para remover.");
     }
 };
 
-// Função para salvar o resultado do scan
-const saveScanResult = (scanId, resultData) => {
-    const outputFileName = `${scanId}.json`;
-    const outputPath = path.join(resultsPath, outputFileName);
+let containerCounter = 1;
 
-    fs.writeFileSync(outputPath, JSON.stringify(resultData, null, 2));
-    manageResultFiles();
+function runZapScan(targetUrl, reportType, outputFileName) {
+    return new Promise((resolve, reject) => {
+        let reportFlag;
 
-    return scanId; // Retorna apenas o ID do resultado
-};
-
-// Funções relacionadas ao ZAP
-async function removeScanAscan() {
-    console.log("[CONSOLE] - Removendo Scan...");
-    const url = `${zapBaseUrl}/JSON/ascan/action/removeAllScans/?apikey=${zapApiKey}`;
-
-    try {
-        const response = await axios.get(url, { headers: {}, data: {}, httpsAgent: new (require('https')).Agent({ rejectUnauthorized: false }) });
-        console.log("[CONSOLE] - Scan Removido");
-    } catch (error) {
-        console.error("[CONSOLE] - Erro ao remover scan", error.message);
-    }
-}
-
-async function removeScanSpider() {
-    console.log("[CONSOLE] - Removendo Scan...");
-    const url = `${zapBaseUrl}/JSON/spider/action/removeAllScans/?apikey=${zapApiKey}`;
-
-    try {
-        const response = await axios.get(url, { headers: {}, data: {}, httpsAgent: new (require('https')).Agent({ rejectUnauthorized: false }) });
-        console.log("[CONSOLE] - Scan Removido");
-    } catch (error) {
-        console.error("[CONSOLE] - Erro ao remover scan", error.message);
-    }
-}
-
-async function newSession() {
-    console.log("[CONSOLE] - Limpando Sessão...");
-    const url = `${zapBaseUrl}/JSON/core/action/newSession/?apikey=${zapApiKey}&name=&overwrite=`;
-
-    try {
-        const response = await axios.get(url, { headers: {}, data: {}, httpsAgent: new (require('https')).Agent({ rejectUnauthorized: false }) });
-        console.log("[CONSOLE] - Sessão Limpada");
-    } catch (error) {
-        console.error("[CONSOLE] - Erro ao limpar sessão", error.message);
-    }
-}
-
-async function runSpider(url_scan_zap) {
-    console.log("[CONSOLE] - Start no scan da aplicação... URL ", url_scan_zap);
-    const url = `${zapBaseUrl}/JSON/spider/action/scan/?apikey=${zapApiKey}&url=${encodeURIComponent(url_scan_zap)}%2F&maxChildren=&recurse=&contextName=&subtreeOnly=`;
-
-    try {
-        const response = await axios.get(url, { headers: {}, data: {}, httpsAgent: new (require('https')).Agent({ rejectUnauthorized: false }) });
-        const scan_id = response.data.scan;
-        console.log("[CONSOLE] - Scan Iniciado");
-        return scan_id;
-    } catch (error) {
-        console.error("[CONSOLE] - Erro ao iniciar o Scan", error.message);
-        return null;
-    }
-}
-
-async function getStatusSpider(scan_id) {
-    const url = `${zapBaseUrl}/JSON/spider/view/status/?apikey=${zapApiKey}&scanId=${scan_id}`;
-    const httpsAgent = new (require('https')).Agent({ rejectUnauthorized: false });
-
-    let status_scan = "0";
-    while (status_scan !== "100") {
-        try {
-            const response = await axios.get(url, { headers: {}, data: {}, httpsAgent });
-            status_scan = response.data.status;
-            console.log("[CONSOLE] - SPIDER Scan Rodando", `${status_scan}%`);
-            await new Promise(resolve => setTimeout(resolve, 20000));
-        } catch (error) {
-            console.error("[CONSOLE] - Erro ao obter status do Scan", error.message);
-            return;
+        switch(reportType) {
+            case 'html':
+                reportFlag = `-r results/${outputFileName}`;
+                break;
+            case 'md':
+                reportFlag = `-w results/${outputFileName}`;
+                break;
+            case 'xml':
+                reportFlag = `-x results/${outputFileName}`;
+                break;
+            case 'json':
+                reportFlag = `-J results/${outputFileName}`;
+                break;
+            default:
+                return reject(new Error('Invalid report type specified'));
         }
-    }
-    console.log("[CONSOLE] - SPIDER Scan Terminado", `${status_scan}%`);
-}
 
-async function runAscan(url_scan_zap) {
-    console.log("[CONSOLE] - Start no scan da aplicação... URL ", url_scan_zap);
-    const regra = "scan";
-    const url = `${zapBaseUrl}/JSON/ascan/action/scan/?apikey=${zapApiKey}&url=${encodeURIComponent(url_scan_zap)}%2F&recurse=&inScopeOnly=&method=&postData=&contextId=`;
+        const containerName = `dast_${containerCounter}`;
+        containerCounter++;
 
-    try {
-        const response = await axios.get(url, { headers: {}, data: {}, httpsAgent: new (require('https')).Agent({ rejectUnauthorized: false }) });
-        const scan_id = response.data.scan;
-        console.log("[CONSOLE] - Scan Iniciado");
-        console.log(`ID ::: ${scan_id}`)
-        return scan_id;
-    } catch (error) {
-        console.error("[CONSOLE] - Erro ao iniciar o Scan", error.message);
-        return null;
-    }
-}
+        const command = `docker run --rm -v $(pwd):/zap/wrk/:rw -v ${resultsPath}:/zap/wrk/results/:rw --name ${containerName} --user $(id -u):$(id -g) ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t ${targetUrl} ${reportFlag}`;
+        console.log(`[CONSOLE] - Executando comando Docker: ${command}`);
+        exec(command, { shell: '/bin/bash' }, (error, stdout, stderr) => {
+            // if (error) {
+            //     console.error(`[CONSOLE] - Erro ao executar o comando Docker: ${error.message}`);
+            //     reject(error);
+            // }
 
-async function getStatusAscan(scan_id) {
-    const url = `${zapBaseUrl}/JSON/ascan/view/status/?apikey=${zapApiKey}&scanId=${scan_id}`;
-    const httpsAgent = new (require('https')).Agent({ rejectUnauthorized: false });
-
-    let status_scan = "0";
-    while (status_scan !== "100") {
-        try {
-            const response = await axios.get(url, { headers: {}, data: {}, httpsAgent });
-            status_scan = response.data.status;
-            console.log("[CONSOLE] - ASCAN Scan Rodando", `${status_scan}%`);
-            
-            await new Promise(resolve => setTimeout(resolve, 60000));
-        } catch (error) {
-            console.error("[CONSOLE] - Erro ao obter status do Scan", error.message);
-            return;
-        }
-    }
-    
-
-console.log("[CONSOLE] - ASCAN Scan Terminado", `${status_scan}%`);
-}
-
-// Função para obter o relatório JSON do ZAP
-async function getJsonReport() {
-    const urlZap = `${zapBaseUrl}/OTHER/core/other/jsonreport/?apikey=${zapApiKey}`;
-
-    try {
-        const response = await axios.get(urlZap, { httpsAgent: new (require('https')).Agent({ rejectUnauthorized: false }) });
-
-        if (response.status === 200) {
-            console.log("[CONSOLE] - GET Gerando Report do scan em formato JSON...");
-            return response.data;
-        } else {
-            console.log("[CONSOLE] - Erro ao Baixar Arquivo");
-            console.log(response.status);
-            throw new Error('Erro ao Baixar Arquivo');
-        }
-    } catch (error) {
-        console.error(error.message);
-        throw error;
-    }
+            if (fs.existsSync(path.join(resultsPath, outputFileName))) {
+                console.log(`[CONSOLE] - Arquivo ${outputFileName} gerado com sucesso.`);
+                resolve(outputFileName);
+            } else {
+                console.error(`[CONSOLE] - O arquivo ${outputFileName} não foi encontrado.`);
+                reject(new Error('O scan não foi realizado com sucesso.'));
+            }
+        });
+    });
 }
 
 // Rota para iniciar SCAN DAST
@@ -199,62 +101,80 @@ async function getJsonReport() {
  *           type: string
  *         required: true
  *         description: URL alvo para o scan
+ *       - in: query
+ *         name: reportType
+ *         schema:
+ *           type: string
+ *           enum: [html, md, xml, json]
+ *         required: true
+ *         description: Tipo de relatório a ser gerado
  *     responses:
  *       200:
  *         description: Scan Terminado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 fileId:
+ *                   type: string
+ *                   description: ID do arquivo gerado
  *       400:
  *         description: Parâmetros inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Descrição do erro
  *       500:
  *         description: Erro interno do servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Descrição do erro
  */
+// Rota para iniciar SCAN DAST
 router.post('/', async (req, res) => {
-    const { targetUrl } = req.query;
+    const { targetUrl, reportType } = req.query;
+
+    console.log(`[CONSOLE] - Requisição recebida para iniciar SCAN DAST. targetUrl: ${targetUrl}, reportType: ${reportType}`);
 
     if (!targetUrl) {
+        console.error("[CONSOLE] - Parâmetro targetUrl é obrigatório.");
         return res.status(400).json({ error: 'Parâmetro targetUrl é obrigatório' });
     }
 
-    const scanId = generateRandomId();
+    if (!reportType || !['html', 'md', 'xml', 'json'].includes(reportType)) {
+        console.error("[CONSOLE] - Parâmetro reportType é obrigatório e deve ser um dos seguintes: html, md, xml, json.");
+        return res.status(400).json({ error: 'Parâmetro reportType é obrigatório e deve ser um dos seguintes: html, md, xml, json' });
+    }
 
     try {
-        await removeScanAscan();
+        const scanId = generateRandomId();
+        const outputFileName = `${scanId}.${reportType}`;
 
-        const spiderScanId = await runSpider(targetUrl);
-        if (spiderScanId) {
-            await getStatusSpider(spiderScanId);
+        console.log(`[CONSOLE] - ID do scan gerado: ${scanId}`);
+        console.log(`[CONSOLE] - Caminho para salvar o resultado: ${path.join(resultsPath, outputFileName)}`);
 
-            const ascanId = await runAscan(targetUrl);
-            if (ascanId) {
-                await getStatusAscan(spiderScanId);
+        await runZapScan(targetUrl, reportType, outputFileName);
 
+        // Concluir o scan DAST e resetar o contador de scans concorrentes
+        concludeDASTScan(req.user.username);
 
-                // Obter o relatório JSON
-                const report = await getJsonReport();
+        manageResultFiles();
 
-                // Salvar o resultado do scan
-                const resultData = {
-                    spiderScanId,
-                    ascanId,
-                    targetUrl,
-                    scanId,
-                    timestamp: new Date().toISOString(),
-                    report
-                };
-
-                const scanResultId = saveScanResult(scanId, resultData);
-
-                return res.status(200).json({ message: `Scan Terminado ID ::: ${scanResultId}` });
-            } else {
-                return res.status(500).json({ error: 'Erro ao iniciar o ASCAN' });
-            }
-        } else {
-            return res.status(500).json({ error: 'Erro ao iniciar o SPIDER Scan' });
-        }
+        return res.status(200).json({ fileId: scanId });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: error.message });
+        console.error(`[CONSOLE] - Erro ao executar o scan: ${error.message}`);
+        return res.status(500).json({ error: 'Erro ao executar o scan DAST, Entre em contato com o Fornecedor' });
     }
 });
 
 module.exports = router;
-

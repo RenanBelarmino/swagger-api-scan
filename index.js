@@ -3,6 +3,15 @@ const server = express();
 const port = process.env.PORT || 3000;
 const { swaggerUi, specs } = require('./swagger');
 const { verifyToken } = require('./auth'); // Verifique se o caminho está correto
+const { canStartConcurrentScan } = require('./concurrentScans'); // Importe a função de controle de scans concorrentes
+
+const loginRouter = require('./routes/login');
+const sast_POST_ScanRouter = require('./routes/sast/s.POST_Scan');
+const sast_POST_GIT_ScanRouter = require('./routes/sast/s.POST_Scan_GIT');
+const resultSASTRouter = require('./routes/sast/s.GET_SCAN_ID');
+const dast_POST_ScanRouter = require('./routes/dast/d.POST_Scan');
+const dast_GET_ScanRouter = require('./routes/dast/d.GET_SCAN_ID');
+const dast_GET_ListScans = require('./routes/dast/d.GET_LIST');
 
 // Middleware para processar JSON no corpo das requisições
 server.use(express.json());
@@ -21,32 +30,32 @@ server.use((err, req, res, next) => {
 // Middleware de logging para capturar e registrar todas as requisições feitas à Swagger
 server.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-// LOGIN
-const loginRouter = require('./routes/login');
-
-//SAST
-const sast_POST_ScanRouter = require('./routes/sast/s.POST_Scan');
-const sast_POST_GIT_ScanRouter = require('./routes/sast/s.POST_Scan_GIT');
-const resultSASTRouter = require('./routes/sast/s.GET_SCAN_ID');
-
-
-//DAST
-const dast_POST_ScanRouter = require('./routes/dast/d.POST_Scan');
-const dast_GET_ScanRouter = require('./routes/dast/d.GET_SCAN_ID');
+// Middleware para verificar e controlar CONCURRENT_SCANS
+const concurrentScansMiddleware = (req, res, next) => {
+    const username = req.user.username; // Supondo que `req.user` contenha o usuário autenticado
+    if (canStartConcurrentScan(username)) {
+        next();
+    } else {
+        console.log('Max concurrent scans limit reached')
+        res.status(403).send('Max concurrent scans limit reached');
+    }
+};
 
 
-// LOGIN
+//////////////////////////////////////////////////////////////////////////////
+// Configuração das rotas
+//login
 server.use('/api/login', loginRouter);
 
-//SAST
-server.use('/api/sast/scan', verifyToken, sast_POST_ScanRouter); 
-server.use('/api/sast/scan-git', verifyToken, sast_POST_GIT_ScanRouter);
+//sast
+server.use('/api/sast/scan', verifyToken, concurrentScansMiddleware, sast_POST_ScanRouter);
+server.use('/api/sast/scan-git', verifyToken, concurrentScansMiddleware, sast_POST_GIT_ScanRouter);
 server.use('/api/resultSAST', verifyToken, resultSASTRouter);
 
-
-//DAST
-server.use('/api/dast/scan', verifyToken, dast_POST_ScanRouter);
+//dast
+server.use('/api/dast/scan', verifyToken, concurrentScansMiddleware, dast_POST_ScanRouter);
 server.use('/api/resultDAST', verifyToken, dast_GET_ScanRouter);
+server.use('/api/ListScans', verifyToken, dast_GET_ListScans);
 
 
 server.listen(port, () => {
