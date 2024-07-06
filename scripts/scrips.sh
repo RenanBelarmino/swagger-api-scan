@@ -3,8 +3,8 @@ sudo apt-get upgrade -y
 sudo curl -fsSL https://fnm.vercel.app/install | bash
 #sudo fnm use --install-if-missing 20
 sudo apt install
-sudo git clone https://renan.belarmino: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@github.com/RenanBelarmino/swagger-api-scan.git
-cd swagger-api-scan/
+#sudo git clone https://renan.belarmino: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@github.com/RenanBelarmino/swagger-api-scan.git
+#cd swagger-api-scan/
 
 
 sudo apt install npm -y
