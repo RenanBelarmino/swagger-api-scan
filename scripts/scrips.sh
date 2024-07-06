@@ -10,6 +10,7 @@ sudo apt install
 sudo apt install npm -y
 #sudo npm init -y
 #sudo npm start init -y
+sudo npm install express
 sudo npm install swagger-jsdoc swagger-ui-express -y
 sudo npm install express-basic-auth -y
 
