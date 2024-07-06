@@ -172,6 +172,8 @@ router.post('/', async (req, res) => {
 
         return res.status(200).json({ fileId: scanId });
     } catch (error) {
+        // Concluir o scan DAST e resetar o contador de scans concorrentes
+        concludeDASTScan(req.user.username);
         console.error(`[CONSOLE] - Erro ao executar o scan: ${error.message}`);
         return res.status(500).json({ error: 'Erro ao executar o scan DAST, Entre em contato com o Fornecedor' });
     }
