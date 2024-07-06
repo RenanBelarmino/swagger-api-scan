@@ -43,7 +43,7 @@ RUN /bin/bash /app/scripts/install_horusec.sh
 
 # Definir permissões para o diretório de resultados
 #RUN mkdir -p /app/src/data/dast/results && RUN chmod -R 777 /app/src/data/dast/results
-#RUN mkdir -p /zap/wrk/results && chmod -R 777 /zap/wrk/results
+RUN mkdir -p /zap/wrk/results && chmod -R 777 /zap/wrk/results
 
 # Expor porta da aplicação
 EXPOSE 3000
