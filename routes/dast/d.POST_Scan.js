@@ -3,7 +3,7 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const router = express.Router();
-const {concludeDASTScan} = require('../../src/services/concurrentScans'); // Importe a função de conclusão do scan DAST
+const { concludeDASTScan } = require('../../src/services/concurrentScans'); // Importe a função de conclusão do scan DAST
 
 // Caminho absoluto dentro do container para o volume shared_volume/dast/results/
 const resultsPath = '/src/data/dast/results/';
@@ -43,7 +43,7 @@ function runZapScan(targetUrl, reportType, outputFileName) {
     return new Promise((resolve, reject) => {
         let reportFlag;
 
-        switch(reportType) {
+        switch (reportType) {
             case 'html':
                 reportFlag = `-r results/${outputFileName}`;
                 break;
@@ -80,6 +80,18 @@ function runZapScan(targetUrl, reportType, outputFileName) {
             }
         });
     });
+}
+
+// Função para garantir que a URL tenha o prefixo http ou https
+function ensureHttpPrefix(url) {
+    if (!/^https?:\/\//i.test(url)) {
+        const alter_url = `http://${url}`
+        console.log(`[CONSOLE] - TARGET SCAN: ${alter_url}`);
+        return alter_url;
+    }
+    console.log(`[CONSOLE] - TARGET SCAN: ${url}`);
+    return url;
+
 }
 
 // Rota para iniciar SCAN DAST
@@ -142,7 +154,7 @@ function runZapScan(targetUrl, reportType, outputFileName) {
  */
 // Rota para iniciar SCAN DAST
 router.post('/', async (req, res) => {
-    const { targetUrl, reportType } = req.query;
+    let { targetUrl, reportType } = req.query;
 
     console.log(`[CONSOLE] - Requisição recebida para iniciar SCAN DAST. targetUrl: ${targetUrl}, reportType: ${reportType}`);
 
@@ -155,6 +167,8 @@ router.post('/', async (req, res) => {
         console.error("[CONSOLE] - Parâmetro reportType é obrigatório e deve ser um dos seguintes: html, md, xml, json.");
         return res.status(400).json({ error: 'Parâmetro reportType é obrigatório e deve ser um dos seguintes: html, md, xml, json' });
     }
+
+    targetUrl = ensureHttpPrefix(targetUrl);
 
     try {
         const scanId = generateRandomId();
