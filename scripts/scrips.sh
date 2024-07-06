@@ -28,7 +28,7 @@ sudo pm2 startup ubuntu
 sudo pm2 save
 
 
-sudo snap install docker
+#sudo snap install docker
 
 sudo docker compose up --build
 
