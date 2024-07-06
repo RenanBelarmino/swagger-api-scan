@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io
 WORKDIR /app
 
 # Copiar os arquivos do projeto para o diretório de trabalho
-COPY node_modules /app/node_modules
+#COPY node_modules /app/node_modules
 COPY routes /app/routes
 COPY src /app/src
 COPY package-lock.json /app/
