@@ -11,7 +11,7 @@ services:
     volumes:
       - shared_volume:/zap/wrk
       - /src/data/sast:/src/data/sast
-      - /var/run/docker.sock:/var/run/docker.sock  # Permitir acesso ao Docker daemon
+      - /var/run/docker.sock:/var/run/docker.sock
       - /src/data/mobile:/src/data/mobile
       - /src/data/dast:/src/data/dast
     networks:
@@ -20,9 +20,26 @@ services:
     environment:
       - ZAP_PROXY_HOST=zaproxy
       - ZAP_PROXY_PORT=8080
-      - JWT_SECRET=${TOKEN_UI}  # Defina o segredo do JWT aqui
+      - JWT_SECRET=${TOKEN_UI}
+      - MONGO_URL=${MONGO_URL}
     env_file:
-      - .env  # Inclua o arquivo .env para que todas as variáveis de ambiente sejam carregadas
+      - .env
+
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - services_scan
+    env_file:
+      - .env
+
 
   # zaproxy:
   #   image: zaproxy/zap-stable
@@ -51,6 +68,7 @@ services:
 
 volumes:
   shared_volume:
+  mongo_data:
 
 networks:
   services_scan:

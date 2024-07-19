@@ -44,7 +44,8 @@ const options = {
     apis: [
         './routes/sast/*.js', // Rotas do SAST
         './routes/dast/*.js', // Rotas do DAST
-        './routes/*.js'
+        './routes/*.js', // Outras rotas
+        './routes/userRoutes.js' // Rota de criação de usuário
     ],
 };
 

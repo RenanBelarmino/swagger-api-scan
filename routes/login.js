@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { generateToken, authenticateUser } = require('../src/middleware/auth');
+const connectDB = require('../src/config/db'); // Import the MongoDB connection function
+
+// Connect to MongoDB
+connectDB();
 
 /**
  * @swagger
@@ -27,17 +31,7 @@ const { generateToken, authenticateUser } = require('../src/middleware/auth');
  *                 type: string
  *               password:
  *                 type: string
- *                 example: '******'  # Exemplo de senha para documentação
- *         text/plain:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
- *                 description: Insira a senha como texto simples (os caracteres serão visíveis)
- *                 example: '******'  # Exemplo de senha para documentação
+ *                 example: '******'  # Example password for documentation
  *     responses:
  *       200:
  *         description: Successful login
@@ -57,15 +51,24 @@ const { generateToken, authenticateUser } = require('../src/middleware/auth');
  *               type: string
  *               example: Invalid credentials
  */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
     const { username, password } = req.body;
-    const user = authenticateUser(username, password);
-    if (user) {
-        const token = generateToken(user.username);
-        res.json({ token });
-    } else {
-        res.status(401).send('Invalid credentials');
+    console.log(`[CONSOLE] - Tentativa de login para o usuário: ${username}`);
+
+    try {
+        const user = await authenticateUser(username, password);
+        if (user) {
+            const token = generateToken(user.username);
+            res.json({ token });
+        } else {
+            console.log('[CONSOLE] - Credenciais inválidas');
+            res.status(401).send('Invalid credentials');
+        }
+    } catch (error) {
+        console.error(`[CONSOLE] - Erro ao autenticar: ${error.message}`);
+        res.status(500).send('Internal server error');
     }
 });
+
 
 module.exports = router;

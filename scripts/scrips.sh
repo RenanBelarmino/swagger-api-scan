@@ -21,6 +21,8 @@ sudo npm install dockerode
 sudo npm install jsonwebtoken bcryptjs express express-jwt
 sudo npm install mongoose
 
+
+
 sudo npm install -g pm2 -y
 
 sudo pm2 start index.js --name=services
