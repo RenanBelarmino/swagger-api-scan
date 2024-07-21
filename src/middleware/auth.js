@@ -1,20 +1,15 @@
-const bcrypt = require('bcryptjs');
+const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
 const User = require('../../models/User');
-require('dotenv').config(); // Carregar variáveis de ambiente do arquivo .env
+require('dotenv').config();
 
-
-// Usar uma chave secreta para assinar o JWT; no futuro, pode-se definir no .env
 const secret = process.env.JWT_SECRET;
 
-
-// Função para gerar o token JWT
 const generateToken = (username) => {
     console.log(`[CONSOLE] - Gerando token para o usuário: ${username}`);
-    return jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign({ username }, secret, { expiresIn: '1h' });
 };
 
-// Função para autenticar o usuário
 const authenticateUser = async (username, password) => {
     console.log(`[CONSOLE] - Autenticando usuário: ${username}`);
     try {
@@ -25,10 +20,8 @@ const authenticateUser = async (username, password) => {
         }
 
         console.log(`[CONSOLE] - Hash armazenado para o usuário ${username}: ${user.password}`);
-        console.log(`[CONSOLE] - Comparador de senha teste${user.password}: ${password}`);
 
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        
+        const passwordMatch = await argon2.verify(user.password, password);
         console.log(`[passwordMatch] - ${passwordMatch}`);
 
         if (passwordMatch) {
@@ -48,17 +41,29 @@ const authenticateUser = async (username, password) => {
     }
 };
 
-// Middleware para verificar o token ou autenticação básica
 const verifyToken = async (req, res, next) => {
     console.log(`[CONSOLE] - Verificando token ou credenciais básicas`);
     const authHeader = req.headers['authorization'];
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
+    if (authHeader && authHeader.startsWith('Basic ')) {
+        const base64Credentials = authHeader.split(' ')[1];
+        const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+        const [username, password] = credentials.split(':');
+
+        // Autenticar usuário com username e password
+        const user = await authenticateUser(username, password);
+        if (user) {
+            req.user = user;
+            next();
+        } else {
+            console.log(`[CONSOLE] - Credenciais inválidas`);
+            res.status(401).send('Credenciais inválidas');
+        }
+    } else if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.split(' ')[1];
         jwt.verify(token, secret, async (err, decoded) => {
             if (err) {
                 console.log(`[CONSOLE] - Falha ao autenticar o token`);
-                console.log(err);
                 return res.status(401).send('Falha ao autenticar o token');
             }
 

@@ -1,5 +1,5 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
+const argon2 = require('argon2');
 const User = require('../models/User');
 const connectDB = require('../src/config/db');
 
@@ -52,7 +52,7 @@ router.post('/users', async (req, res) => {
             return res.status(400).send('User already exists');
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await argon2.hash(password);
         const newUser = new User({
             username,
             password: hashedPassword,

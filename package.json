@@ -10,6 +10,7 @@
     "license": "ISC",
     "dependencies": {
         "@nestjs/swagger": "^7.3.1",
+        "argon2": "^0.40.3",
         "axios": "^0.21.4",
         "bcryptjs": "^2.4.3",
         "decompress": "^4.2.1",

@@ -1,10 +1,8 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const argon2 = require('argon2');
 
-// Definir a URI de conexão do MongoDB diretamente no código
 const mongoURI = 'mongodb://root:example@localhost:27017/scanservicesdb?authSource=admin';
 
-// Definir o modelo User (ajuste conforme o caminho correto para seu modelo)
 const UserSchema = new mongoose.Schema({
     username: String,
     password: String,
@@ -14,31 +12,28 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', UserSchema);
 
-// Função para conectar ao MongoDB
 const connectDB = async () => {
     try {
         await mongoose.connect(mongoURI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 30000 // Aumenta o timeout para 30 segundos
+            serverSelectionTimeoutMS: 30000
         });
         console.log('[CONSOLE] - Conectado ao MongoDB com sucesso.');
     } catch (error) {
         console.error('[CONSOLE] - Erro ao conectar ao MongoDB:', error.message);
-        process.exit(1); // Encerrar o processo com erro
+        process.exit(1);
     }
 };
 
-// Função para criar um novo usuário
 const createUser = async (username, password) => {
     try {
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const hashedPassword = await argon2.hash(password);
 
         const user = new User({
             username,
             password: hashedPassword,
-            permissions: ['sast'], // Exemplo de permissões
+            permissions: ['sast'],
             CONCURRENT_SCANS: 1
         });
 
@@ -49,7 +44,6 @@ const createUser = async (username, password) => {
     }
 };
 
-// Função para autenticar o usuário
 const authenticateUser = async (username, password) => {
     console.log(`[CONSOLE] - Autenticando usuário: ${username}`);
     try {
@@ -59,11 +53,7 @@ const authenticateUser = async (username, password) => {
             return null;
         }
 
-        console.log(`[CONSOLE] - Hash armazenado para o usuário ${username}: ${user.password}`);
-        console.log(`[CONSOLE] - Comparador de senha teste ${user.password}: ${password}`);
-
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        console.log(`[passwordMatch] - ${passwordMatch}`);
+        const passwordMatch = await argon2.verify(user.password, password);
 
         if (passwordMatch) {
             console.log(`[CONSOLE] - Senha correta para o usuário: ${username}`);
@@ -82,19 +72,20 @@ const authenticateUser = async (username, password) => {
     }
 };
 
-// Testar a conexão, criar um usuário e autenticar
 const testUserCreationAndAuthentication = async () => {
-    await connectDB(); // Conectar ao MongoDB
+    await connectDB();
 
-    const username = 'renan'; // Nome de usuário de teste
-    const password = 'renan123'; // Senha de teste
+    const username1 = 'renan1';
+    const password = 'renan123';
+    const username2 = 'renan2';
 
-    // Crie o usuário
-    await createUser(username, password);
+    // Crie os usuários
+    await createUser(username1, password);
+    await createUser(username2, password);
 
     // Teste a autenticação
-    await authenticateUser(username, password);
+    await authenticateUser(username1, password);
+    await authenticateUser(username2, password);
 };
 
-// Executar o teste
 testUserCreationAndAuthentication();
