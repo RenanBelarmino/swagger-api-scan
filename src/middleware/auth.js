@@ -5,40 +5,38 @@ const connectDB = require('../../src/config/db');
 
 connectDB();
 
-
 require('dotenv').config();
 
 const secret = process.env.JWT_SECRET;
 
-const generateToken = (username) => {
-    console.log(`[CONSOLE] - Gerando token para o usuário: ${username}`);
-    return jwt.sign({ username }, secret, { expiresIn: '1h' });
+const generateToken = (login, id) => {
+    console.log(`[CONSOLE] - Gerando token para o usuário: ${login}, ID: ${id}`);
+    return jwt.sign({ login, id }, secret, { expiresIn: '1h' });
 };
 
-const authenticateUser = async (username, password) => {
-    console.log(`[CONSOLE] - Autenticando usuário: ${username}`);
+const authenticateUser = async (login, password) => {
+    console.log(`[CONSOLE] - Autenticando usuário com login: ${login}`);
     try {
-        const user = await User.findOne({ username });
+        const user = await User.findOne({ login });
         if (!user) {
-            console.log(`[CONSOLE] - Usuário não encontrado: ${username}`);
+            console.log(`[CONSOLE] - Usuário não encontrado com login: ${login}`);
             return null;
         }
 
-        console.log(`[CONSOLE] - Hash armazenado para o usuário ${username}: ${user.password}`);
+        console.log(`[CONSOLE] - Hash armazenado para o usuário com login ${login}: ${user.password}`);
 
         const passwordMatch = await argon2.verify(user.password, password);
         console.log(`[passwordMatch] - ${passwordMatch}`);
 
         if (passwordMatch) {
-            console.log(`[CONSOLE] - Senha correta para o usuário: ${username}`);
+            console.log(`[CONSOLE] - Senha correta para o usuário com login: ${login}, ID: ${user.id}`);
             return {
-                username: user.username,
+                id: user.id,
+                login: user.login,
                 permissions: user.permissions,
-                // Remover se não estiver usando
-                // CONCURRENT_SCANS: user.CONCURRENT_SCANS
             };
         } else {
-            console.log(`[CONSOLE] - Senha incorreta para o usuário: ${username}`);
+            console.log(`[CONSOLE] - Senha incorreta para o usuário com login: ${login}, ID: ${user.id}`);
             return null;
         }
     } catch (error) {
@@ -54,11 +52,11 @@ const verifyToken = async (req, res, next) => {
     if (authHeader && authHeader.startsWith('Basic ')) {
         const base64Credentials = authHeader.split(' ')[1];
         const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-        const [username, password] = credentials.split(':');
+        const [login, password] = credentials.split(':');
 
-        // Autenticar usuário com username e password
+        // Autenticar usuário com login e password
         try {
-            const user = await authenticateUser(username, password);
+            const user = await authenticateUser(login, password);
             if (user) {
                 req.user = user;
                 next();
@@ -78,19 +76,18 @@ const verifyToken = async (req, res, next) => {
                 return res.status(401).send('Falha ao autenticar o token');
             }
 
-            console.log(`[CONSOLE] - Token autenticado com sucesso para o usuário: ${decoded.username}`);
+            console.log(`[CONSOLE] - Token autenticado com sucesso para o login: ${decoded.login}, ID: ${decoded.id}`);
             try {
-                const user = await User.findOne({ username: decoded.username });
+                const user = await User.findOne({ login: decoded.login });
                 if (!user) {
-                    console.log(`[CONSOLE] - Usuário não encontrado: ${decoded.username}`);
+                    console.log(`[CONSOLE] - Usuário não encontrado com login: ${decoded.login}`);
                     return res.status(404).send('Usuário não encontrado');
                 }
 
                 req.user = {
-                    username: decoded.username,
+                    id: user.id,
+                    login: decoded.login,
                     permissions: user.permissions,
-                    // Remover se não estiver usando
-                    // CONCURRENT_SCANS: user.CONCURRENT_SCANS
                 };
                 next();
             } catch (error) {

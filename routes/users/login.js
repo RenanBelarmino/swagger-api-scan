@@ -1,13 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { generateToken, authenticateUser } = require('../src/middleware/auth');
-
-/**
- * @swagger
- * tags:
- *   name: Authentication
- *   description: Authentication operations
- */
+const { generateToken, authenticateUser } = require('../../src/middleware/auth');
 
 /**
  * @swagger
@@ -15,7 +8,7 @@ const { generateToken, authenticateUser } = require('../src/middleware/auth');
  *   post:
  *     summary: Authenticate user and generate access token
  *     tags:
- *       - Authentication
+ *       - Users
  *     requestBody:
  *       required: true
  *       content:

@@ -19,6 +19,10 @@ const options = {
                 description: 'APIs relacionadas ao SAST'
             },
             {
+                name: 'Users',
+                description: 'APIs de usuários'
+            },
+            {
                 name: 'Authentication',
                 description: 'APIs de autenticação'
             }
@@ -44,8 +48,8 @@ const options = {
     apis: [
         './routes/sast/*.js', // Rotas do SAST
         './routes/dast/*.js', // Rotas do DAST
-        './routes/*.js', // Outras rotas
-        './routes/userRoutes.js' // Rota de criação de usuário
+        //'./routes/*.js', // Outras rotas
+        './routes/users/*.js' // Rota de usuário
     ],
 };
 

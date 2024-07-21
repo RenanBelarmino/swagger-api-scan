@@ -9,8 +9,10 @@ const { verifyToken } = require('./src/middleware/auth'); // Verifique se o cami
 const { canStartConcurrentScan } = require('./src/services/concurrentScans'); // Importe a função de controle de scans concorrentes
 const { hasPermission } = require('./src/services/userPermissions'); // Importe a função de verificação de permissões
 
-const loginRouter = require('./routes/login');
-const userRoutes = require('./routes/userRoutes'); // Importe as rotas de usuários
+const loginRouter = require('./routes/users/login');
+const createUser = require('./routes/users/createUser'); // Importe as rotas de usuários
+const listUser = require('./routes/users/ListUsers');
+
 const sast_POST_ScanRouter = require('./routes/sast/s.POST_Scan');
 const sast_POST_GIT_ScanRouter = require('./routes/sast/s.POST_Scan_GIT');
 const resultSASTRouter = require('./routes/sast/s.GET_SCAN_ID');
@@ -62,7 +64,8 @@ const concurrentScansMiddleware = (scanType) => async (req, res, next) => {
 };
 
 // Configuração das rotas
-server.use('/api', userRoutes); // Use as novas rotas na aplicação
+server.use('/api', createUser); // Use as novas rotas na aplicação
+server.use('/api/list-users', verifyToken, listUser);
 
 // login
 server.use('/api/login', loginRouter);
