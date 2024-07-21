@@ -1,10 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const { generateToken, authenticateUser } = require('../src/middleware/auth');
-const connectDB = require('../src/config/db'); // Import the MongoDB connection function
-
-// Connect to MongoDB
-connectDB();
 
 /**
  * @swagger
@@ -43,6 +39,27 @@ connectDB();
  *                 token:
  *                   type: string
  *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+ *                 permissions:
+ *                   type: object
+ *                   properties:
+ *                     sast:
+ *                       type: object
+ *                       properties:
+ *                         scan:
+ *                           type: number
+ *                         maxConcurrentScans:
+ *                           type: number
+ *                         currentConcurrentScans:
+ *                           type: number
+ *                     dast:
+ *                       type: object
+ *                       properties:
+ *                         scan:
+ *                           type: number
+ *                         maxConcurrentScans:
+ *                           type: number
+ *                         currentConcurrentScans:
+ *                           type: number
  *       401:
  *         description: Invalid credentials
  *         content:
@@ -59,7 +76,10 @@ router.post('/', async (req, res) => {
         const user = await authenticateUser(username, password);
         if (user) {
             const token = generateToken(user.username);
-            res.json({ token });
+            res.json({
+                token,
+                permissions: user.permissions
+            });
         } else {
             console.log('[CONSOLE] - Credenciais inválidas');
             res.status(401).send('Invalid credentials');
@@ -69,6 +89,5 @@ router.post('/', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
-
 
 module.exports = router;

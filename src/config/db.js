@@ -8,8 +8,8 @@ const connectDB = async () => {
         //console.log('MONGO_PASSWORD:', process.env.MONGO_PASSWORD);
 
         await mongoose.connect(process.env.MONGO_URL, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
+            // useNewUrlParser: true,
+            // useUnifiedTopology: true,
             
             auth: {
                 username: process.env.MONGO_USER,

@@ -7,7 +7,7 @@ const port = process.env.PORT || 3000;
 const { swaggerUi, specs } = require('./src/docs/swagger');
 const { verifyToken } = require('./src/middleware/auth'); // Verifique se o caminho está correto
 const { canStartConcurrentScan } = require('./src/services/concurrentScans'); // Importe a função de controle de scans concorrentes
-const { userPermissions } = require('./src/services/userPermissions'); // Importe a função de controle de scans concorrentes
+const { hasPermission } = require('./src/services/userPermissions'); // Importe a função de verificação de permissões
 
 const loginRouter = require('./routes/login');
 const userRoutes = require('./routes/userRoutes'); // Importe as rotas de usuários
@@ -24,6 +24,7 @@ connectDB();
 // Middleware para processar JSON no corpo das requisições
 server.use(express.json());
 
+// Middleware para logging de requisições
 server.use((req, res, next) => {
     console.log(`[INFO] - ${new Date().toLocaleString()}: ${req.method} ${req.url}`);
     next();
@@ -35,34 +36,46 @@ server.use((err, req, res, next) => {
     res.status(500).send('Something broke!');
 });
 
-// Middleware de logging para capturar e registrar todas as requisições feitas à Swagger
+// Middleware para Swagger
 server.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-server.use('/api', userRoutes); // Use as novas rotas na aplicação
 
-// Middleware para verificar e controlar CONCURRENT_SCANS
-const concurrentScansMiddleware = (req, res, next) => {
+// Middleware para verificar permissões
+const verifyPermissions = (scanType) => async (req, res, next) => {
     const username = req.user.username; // Supondo que req.user contenha o usuário autenticado
-    if (canStartConcurrentScan(username)) {
+    if (await hasPermission(username, scanType)) {
         next();
     } else {
-        console.log('Max concurrent scans limit reached');
+        console.log(`[PERMISSION ERROR] - Usuário ${username} não tem permissão para iniciar o scan ${scanType}`);
+        res.status(403).send('Você não tem permissão para realizar esse scan.');
+    }
+};
+
+// Middleware para verificar e controlar CONCURRENT_SCANS
+const concurrentScansMiddleware = (scanType) => async (req, res, next) => {
+    const username = req.user.username; // Supondo que req.user contenha o usuário autenticado
+    if (await canStartConcurrentScan(username, scanType)) {
+        next();
+    } else {
+        console.log(`[CONCURRENT SCANS ERROR] - Limite de scans concorrentes atingido para o tipo ${scanType}`);
         res.status(403).send('Max concurrent scans limit reached');
     }
 };
 
 // Configuração das rotas
+server.use('/api', userRoutes); // Use as novas rotas na aplicação
+
 // login
 server.use('/api/login', loginRouter);
 
 // sast
-server.use('/api/sast/scan', verifyToken, concurrentScansMiddleware, sast_POST_ScanRouter);
-server.use('/api/sast/scan-git', verifyToken, concurrentScansMiddleware, sast_POST_GIT_ScanRouter);
-server.use('/api/resultSAST', verifyToken, resultSASTRouter);
+server.use('/api/sast/scan', verifyToken, verifyPermissions('sast'), concurrentScansMiddleware('sast'), sast_POST_ScanRouter);
+server.use('/api/sast/scan-git', verifyToken, verifyPermissions('sast'), concurrentScansMiddleware('sast'), sast_POST_GIT_ScanRouter);
+server.use('/api/resultSAST', verifyToken, verifyPermissions('sast'), resultSASTRouter);
 
 // dast
-server.use('/api/dast/scan', verifyToken, concurrentScansMiddleware, dast_POST_ScanRouter);
-server.use('/api/resultDAST', verifyToken, dast_GET_ScanRouter);
-server.use('/api/ListScans', verifyToken, dast_GET_ListScans);
+server.use('/api/dast/scan', verifyToken, verifyPermissions('dast'), concurrentScansMiddleware('dast'), dast_POST_ScanRouter);
+server.use('/api/resultDAST', verifyToken, verifyPermissions('dast'), dast_GET_ScanRouter);
+server.use('/api/ListScans', verifyToken, verifyPermissions('dast'), dast_GET_ListScans);
 
 server.listen(port, () => {
     console.log(`[INFO] - ${new Date().toLocaleString()}: Servidor está funcionando na porta ${port}`);

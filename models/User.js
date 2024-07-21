@@ -1,20 +1,23 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 
 const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    permissions: { type: [String], required: true },
-    CONCURRENT_SCANS: { type: Number, required: true }
-});
-
-UserSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) {
-        return next();
+    permissions: {
+        sast: {
+            scan: { type: Number, required: true },  // 1 = true, 0 = false
+            maxConcurrentScans: { type: Number, required: true },
+            currentConcurrentScans: { type: Number, default: 0 }
+        },
+        dast: {
+            scan: { type: Number, required: true },  // 1 = true, 0 = false
+            maxConcurrentScans: { type: Number, required: true },
+            currentConcurrentScans: { type: Number, default: 0 }
+        }
     }
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
 });
 
-module.exports = mongoose.model('User', UserSchema);
+// Criação do modelo com o schema definido
+const User = mongoose.model('User', UserSchema);
+
+module.exports = User;

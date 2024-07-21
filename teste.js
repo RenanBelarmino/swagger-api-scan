@@ -4,21 +4,27 @@ const argon2 = require('argon2');
 const mongoURI = 'mongodb://root:example@localhost:27017/scanservicesdb?authSource=admin';
 
 const UserSchema = new mongoose.Schema({
-    username: String,
-    password: String,
-    permissions: [String],
-    CONCURRENT_SCANS: Number
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    permissions: {
+        sast: {
+            scan: { type: Number, required: true },  // 1 = true, 0 = false
+            maxConcurrentScans: { type: Number, required: true },
+            currentConcurrentScans: { type: Number, default: 0 }
+        },
+        dast: {
+            scan: { type: Number, required: true },  // 1 = true, 0 = false
+            maxConcurrentScans: { type: Number, required: true },
+            currentConcurrentScans: { type: Number, default: 0 }
+        }
+    }
 });
 
 const User = mongoose.model('User', UserSchema);
 
 const connectDB = async () => {
     try {
-        await mongoose.connect(mongoURI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 30000
-        });
+        await mongoose.connect(mongoURI);
         console.log('[CONSOLE] - Conectado ao MongoDB com sucesso.');
     } catch (error) {
         console.error('[CONSOLE] - Erro ao conectar ao MongoDB:', error.message);
@@ -33,8 +39,18 @@ const createUser = async (username, password) => {
         const user = new User({
             username,
             password: hashedPassword,
-            permissions: ['sast'],
-            CONCURRENT_SCANS: 1
+            permissions: {
+                sast: {
+                    scan: 1,
+                    maxConcurrentScans: 2,
+                    currentConcurrentScans: 0
+                },
+                dast: {
+                    scan: 0,
+                    maxConcurrentScans: 0,
+                    currentConcurrentScans: 0
+                }
+            }
         });
 
         await user.save();
@@ -54,13 +70,13 @@ const authenticateUser = async (username, password) => {
         }
 
         const passwordMatch = await argon2.verify(user.password, password);
+        console.log(`${user.password} e ${password}`);
 
         if (passwordMatch) {
             console.log(`[CONSOLE] - Senha correta para o usuário: ${username}`);
             return {
                 username: user.username,
-                permissions: user.permissions,
-                CONCURRENT_SCANS: user.CONCURRENT_SCANS
+                permissions: user.permissions
             };
         } else {
             console.log(`[CONSOLE] - Senha incorreta para o usuário: ${username}`);
@@ -75,17 +91,15 @@ const authenticateUser = async (username, password) => {
 const testUserCreationAndAuthentication = async () => {
     await connectDB();
 
-    const username1 = 'renan1';
-    const password = 'renan123';
-    const username2 = 'renan2';
+    const username1 = 'renan2';
+    const password = 'renan12';
 
-    // Crie os usuários
-    await createUser(username1, password);
-    await createUser(username2, password);
+    // Crie o usuário
+    //await createUser(username1, password);
 
     // Teste a autenticação
-    await authenticateUser(username1, password);
-    await authenticateUser(username2, password);
+    const user = await authenticateUser(username1, password);
+    console.log(`[CONSOLE] - Resultado da autenticação: ${JSON.stringify(user)}`);
 };
 
 testUserCreationAndAuthentication();
