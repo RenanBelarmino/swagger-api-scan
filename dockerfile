@@ -31,9 +31,6 @@ RUN npm install
 # Copiar o restante dos arquivos do projeto
 COPY . .
 
-# Instalar bcrypt separadamente
-RUN npm install bcrypt
-
 # Copiar script de instalação do Horusec
 COPY scripts/install_horusec.sh /app/scripts/
 

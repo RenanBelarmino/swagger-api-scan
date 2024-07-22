@@ -2,17 +2,18 @@ const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
     id: { type: Number, required: true, unique: true },
-    username: { type: String, required: true },
+    username: { type: String, required: true },  // Remover `unique: true`
     login: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    admin: { type: Boolean, default: false },  // Valor padrão para admin
     permissions: {
         sast: {
-            scan: { type: Boolean, required: true },  // true ou false
+            scan: { type: Boolean, required: true },  
             maxConcurrentScans: { type: Number, required: true },
             currentConcurrentScans: { type: Number, default: 0 }
         },
         dast: {
-            scan: { type: Boolean, required: true },  // true ou false
+            scan: { type: Boolean, required: true },  
             maxConcurrentScans: { type: Number, required: true },
             currentConcurrentScans: { type: Number, default: 0 }
         }

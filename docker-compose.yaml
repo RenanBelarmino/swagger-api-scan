@@ -24,6 +24,10 @@ services:
       - MONGO_URL=${MONGO_URL}
     env_file:
       - .env
+    depends_on:
+      - mongo
+    # Remova a entrada do entrypoint aqui
+    # entrypoint: ["/bin/bash", "/app/scripts/entrypoint.sh"]
 
   mongo:
     image: mongo:latest
@@ -37,9 +41,16 @@ services:
       - mongo_data:/data/db
     networks:
       - services_scan
-    env_file:
-      - .env
 
+  entrypoint:
+    build:
+      context: .
+      dockerfile: Dockerfile.entrypoint
+    container_name: entrypoint
+    depends_on:
+      - mongo
+    networks:
+      - services_scan
 
   # zaproxy:
   #   image: zaproxy/zap-stable

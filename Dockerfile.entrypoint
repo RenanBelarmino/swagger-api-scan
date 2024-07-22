@@ -1,0 +1,20 @@
+FROM node:latest
+
+WORKDIR /app
+
+# Copiar arquivos de configuração e scripts
+COPY models/User.js /app/models/
+COPY .env /app/
+COPY scripts/createAdmin.js /app/
+
+# Instalar dependências do Node.js
+RUN npm install dotenv
+RUN npm install mongoose
+RUN npm install argon2
+RUN npm install chalk
+
+
+
+
+# Comando para executar o script
+CMD ["node", "/app/createAdmin.js"]

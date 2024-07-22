@@ -8,7 +8,7 @@ const { generateToken, authenticateUser } = require('../../src/middleware/auth')
  *   post:
  *     summary: Authenticate user and generate access token
  *     tags:
- *       - Users
+ *       - Authentication
  *     requestBody:
  *       required: true
  *       content:
