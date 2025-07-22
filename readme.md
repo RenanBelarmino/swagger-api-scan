@@ -75,7 +75,7 @@ Todas as requisições aos endpoints de scan devem incluir um token JWT no cabe�
 ```bash
 curl -X POST http://localhost:3000/api/login \
 -H "Content-Type: application/json" \
--d '{"username":"renan","password":"renan123"}'
+-d '{"username":"teste","password":"teste123"}'
 ```
 
 ### SAST Scan POST
